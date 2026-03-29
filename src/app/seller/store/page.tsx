@@ -42,7 +42,7 @@ export default function SellerStorePage() {
     const file = e.target.files?.[0]; if (!file) return
     try {
       const url = await uploadImage(file, type === 'logo' ? 'logos' : 'banners')
-      setForm(prev => ({ ...prev, [type === 'logo' ? 'logo_url' : 'banner_url']: url }))
+      setForm((prev: StoreUpdateData) => ({ ...prev, [type === 'logo' ? 'logo_url' : 'banner_url']: url }))
     } catch (err) { alert('이미지 업로드 실패') }
   }
 
@@ -120,8 +120,8 @@ export default function SellerStorePage() {
           </div>
 
           <div className="flex-1 space-y-4">
-            <FormField label="상점명 *" value={form.store_name || ''} onChange={v => setForm(p => ({ ...p, store_name: v }))} placeholder="나의 소호몰" />
-            <FormField label="한 줄 소개" value={form.tagline || ''} onChange={v => setForm(p => ({ ...p, tagline: v }))} placeholder="특별한 물건들을 파는 곳" />
+            <FormField label="상점명 *" value={form.store_name || ''} onChange={v => setForm((p: StoreUpdateData) => ({ ...p, store_name: v }))} placeholder="나의 소호몰" />
+            <FormField label="한 줄 소개" value={form.tagline || ''} onChange={v => setForm((p: StoreUpdateData) => ({ ...p, tagline: v }))} placeholder="특별한 물건들을 파는 곳" />
           </div>
         </div>
       </div>
@@ -129,7 +129,7 @@ export default function SellerStorePage() {
       {/* 상세 소개 */}
       <div className="bg-white rounded-xl border border-gray-100 p-6 mb-6">
         <h2 className="text-base font-semibold text-gray-800 mb-5">상세 소개</h2>
-        <textarea value={form.intro || ''} onChange={e => setForm(p => ({ ...p, intro: e.target.value }))}
+        <textarea value={form.intro || ''} onChange={e => setForm((p: StoreUpdateData) => ({ ...p, intro: e.target.value }))}
           rows={5} placeholder="소호몰을 소개하는 문구를 작성해 주세요. 고객들이 첫 화면에서 보게 됩니다."
           className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400" />
       </div>
@@ -140,7 +140,7 @@ export default function SellerStorePage() {
           <h2 className="text-base font-semibold text-gray-800 mb-5">테마 색상</h2>
           <div className="flex items-center gap-3">
             <input type="color" value={form.theme_color || store.theme_color}
-              onChange={e => setForm(p => ({ ...p, theme_color: e.target.value }))}
+              onChange={e => setForm((p: StoreUpdateData) => ({ ...p, theme_color: e.target.value }))}
               className="w-12 h-12 rounded-lg border-0 cursor-pointer" />
             <div>
               <p className="text-sm font-medium text-gray-800">{form.theme_color || store.theme_color}</p>
@@ -149,7 +149,7 @@ export default function SellerStorePage() {
           </div>
           <div className="flex gap-2 mt-4">
             {['#6366f1', '#ec4899', '#14b8a6', '#f97316', '#8b5cf6'].map(c => (
-              <button key={c} onClick={() => setForm(p => ({ ...p, theme_color: c }))}
+              <button key={c} onClick={() => setForm((p: StoreUpdateData) => ({ ...p, theme_color: c }))}
                 style={{ backgroundColor: c }}
                 className={`w-7 h-7 rounded-full transition-transform hover:scale-110 ${(form.theme_color || store.theme_color) === c ? 'ring-2 ring-offset-2 ring-gray-400' : ''}`} />
             ))}
@@ -159,8 +159,8 @@ export default function SellerStorePage() {
         <div className="bg-white rounded-xl border border-gray-100 p-6">
           <h2 className="text-base font-semibold text-gray-800 mb-5">연락처</h2>
           <div className="space-y-3">
-            <FormField label="이메일" value={form.contact_email || ''} onChange={v => setForm(p => ({ ...p, contact_email: v }))} placeholder="contact@mystore.com" type="email" />
-            <FormField label="전화" value={form.contact_phone || ''} onChange={v => setForm(p => ({ ...p, contact_phone: v }))} placeholder="010-0000-0000" type="tel" />
+            <FormField label="이메일" value={form.contact_email || ''} onChange={v => setForm((p: StoreUpdateData) => ({ ...p, contact_email: v }))} placeholder="contact@mystore.com" type="email" />
+            <FormField label="전화" value={form.contact_phone || ''} onChange={v => setForm((p: StoreUpdateData) => ({ ...p, contact_phone: v }))} placeholder="010-0000-0000" type="tel" />
           </div>
         </div>
       </div>
@@ -171,13 +171,13 @@ export default function SellerStorePage() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">배송 정책</label>
-            <textarea value={form.shipping_policy || ''} onChange={e => setForm(p => ({ ...p, shipping_policy: e.target.value }))}
+            <textarea value={form.shipping_policy || ''} onChange={e => setForm((p: StoreUpdateData) => ({ ...p, shipping_policy: e.target.value }))}
               rows={3} placeholder="예) 주문 후 1-3 영업일 이내 발송 / 기본 배송비 3,000원 / 30,000원 이상 무료배송"
               className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">반품/교환 정책</label>
-            <textarea value={form.return_policy || ''} onChange={e => setForm(p => ({ ...p, return_policy: e.target.value }))}
+            <textarea value={form.return_policy || ''} onChange={e => setForm((p: StoreUpdateData) => ({ ...p, return_policy: e.target.value }))}
               rows={3} placeholder="예) 수령 후 7일 이내 반품 가능 / 단순 변심 반품비 편도 3,000원"
               className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400" />
           </div>

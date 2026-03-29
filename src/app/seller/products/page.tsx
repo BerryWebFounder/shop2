@@ -50,7 +50,7 @@ export default function SellerProductsPage() {
   const openCreate = () => { setEditing(null); setForm(EMPTY_FORM); setPanelOpen(true) }
   const openEdit = (p: Product) => {
     setEditing(p)
-    setForm({ name: p.name, description: p.description || '', price: p.price, compare_price: p.compare_price, cost_price: p.cost_price, category: p.category || '', tags: p.tags, images: p.images, track_inventory: p.track_inventory, stock_quantity: p.stock_quantity, low_stock_alert: p.low_stock_alert, has_options: p.has_options, options: p.options, variants: p.variants, status: p.status })
+    setForm({ name: p.name, description: p.description || '', price: p.price, compare_price: p.compare_price ?? undefined, cost_price: p.cost_price ?? undefined, category: p.category || '', tags: p.tags, images: p.images, track_inventory: p.track_inventory, stock_quantity: p.stock_quantity, low_stock_alert: p.low_stock_alert ?? 5, has_options: p.has_options, options: p.options, variants: p.variants, status: p.status })
     setPanelOpen(true)
   }
 
@@ -81,7 +81,7 @@ export default function SellerProductsPage() {
   }
 
   const set = <K extends keyof ProductFormData>(k: K, v: ProductFormData[K]) =>
-    setForm(prev => ({ ...prev, [k]: v }))
+    setForm((prev: ProductFormData) => ({ ...prev, [k]: v }))
 
   if (loading) return <div className="flex items-center justify-center h-screen text-gray-400">불러오는 중...</div>
 
@@ -155,7 +155,7 @@ export default function SellerProductsPage() {
                       {p.compare_price && <p className="text-xs text-gray-400 line-through">{p.compare_price.toLocaleString()}원</p>}
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <span className={`text-sm font-medium ${p.stock_quantity <= p.low_stock_alert ? 'text-red-500' : 'text-gray-700'}`}>
+                      <span className={`text-sm font-medium ${p.stock_quantity <= (p.low_stock_alert ?? 5) ? 'text-red-500' : 'text-gray-700'}`}>
                         {p.track_inventory ? p.stock_quantity : '∞'}
                       </span>
                     </td>
@@ -235,10 +235,10 @@ export default function SellerProductsPage() {
                 </div>
                 {form.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
-                    {form.tags.map(t => (
+                    {form.tags.map((t: string) => (
                       <span key={t} className="flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs">
                         {t}
-                        <button onClick={() => set('tags', form.tags.filter(x => x !== t))} className="hover:text-indigo-900">✕</button>
+                        <button onClick={() => set('tags', form.tags.filter((x: string) => x !== t))} className="hover:text-indigo-900">✕</button>
                       </span>
                     ))}
                   </div>
