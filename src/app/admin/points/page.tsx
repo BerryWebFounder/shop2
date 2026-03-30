@@ -135,7 +135,7 @@ export default function AdminPointsPage() {
         </div>
 
         {/* 포인트 내역 */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6">
           {!selected ? (
             <div className="flex flex-col items-center justify-center h-full text-ink-3">
               <p className="text-4xl mb-3">👈</p>

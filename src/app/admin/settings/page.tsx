@@ -57,7 +57,7 @@ export default function SettingsPage() {
   return (
     <>
       <Topbar title="설정 관리" />
-      <div className="flex-1 overflow-y-auto p-6 animate-page">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-page">
         <PageHeader title="설정 관리" subtitle="쇼핑몰 기본 정보 및 관리자 계정을 관리합니다" />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">

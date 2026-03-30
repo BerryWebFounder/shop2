@@ -88,7 +88,7 @@ export function Sidebar({ storeName = '내 쇼핑몰' }: SidebarProps) {
   }
 
   return (
-    <aside className="w-60 min-w-60 h-screen bg-bg-2 border-r border-border flex flex-col overflow-y-auto overflow-x-hidden">
+    <aside className="hidden md:flex w-60 min-w-60 h-screen bg-bg-2 border-r border-border flex-col overflow-y-auto overflow-x-hidden">
       {/* Logo */}
       <div className="px-4 py-4 border-b border-border flex-shrink-0">
         <div className="flex items-center gap-2.5">

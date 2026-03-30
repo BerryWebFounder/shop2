@@ -61,7 +61,7 @@ export default async function ShopHomePage() {
           style={{ height: '60vh', background: 'var(--shop-bg2)' }}
         >
           <h1
-            className="text-5xl md:text-7xl mb-4"
+            className="text-4xl sm:text-5xl md:text-7xl mb-4"
             style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}
           >
             Welcome
@@ -88,7 +88,7 @@ export default async function ShopHomePage() {
       {(newProducts ?? []).length > 0 && (
         <section className="px-4 md:px-8 py-12" style={{ maxWidth: 'var(--shop-max-w)', margin: '0 auto' }}>
           <div className="flex items-end justify-between mb-8">
-            <h2 className="text-3xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
+            <h2 className="text-2xl sm:text-3xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
               New Arrivals
             </h2>
             <Link href="/shop/products" className="text-sm underline underline-offset-4" style={{ color: 'var(--shop-ink3)' }}>

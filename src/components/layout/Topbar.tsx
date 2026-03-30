@@ -11,7 +11,7 @@ export function Topbar({ title, adminEmail, subtitle }: TopbarProps) {
   const initial = adminEmail ? adminEmail[0].toUpperCase() : 'A'
 
   return (
-    <header className="h-14 bg-bg-2 border-b border-border flex items-center px-6 gap-4 flex-shrink-0 z-10">
+    <header className="h-14 bg-bg-2 border-b border-border flex items-center px-4 md:px-6 gap-3 flex-shrink-0 z-10">
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold text-ink leading-none">{title}</div>
         {subtitle && <div className="text-xs text-ink-3 mt-0.5">{subtitle}</div>}

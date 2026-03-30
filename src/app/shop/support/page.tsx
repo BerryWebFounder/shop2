@@ -101,10 +101,10 @@ export default function SupportPage() {
   }
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto' }} className="px-6 md:px-8 py-10">
+    <div style={{ maxWidth: 800, margin: '0 auto' }} className="px-4 sm:px-6 md:px-8 py-8 md:py-10">
       {/* 헤더 */}
       <div className="text-center mb-10">
-        <h1 className="text-4xl mb-3" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
+        <h1 className="text-3xl sm:text-4xl mb-3" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
           고객센터
         </h1>
         <p className="text-sm" style={{ color: 'var(--shop-ink3)' }}>
@@ -317,7 +317,7 @@ export default function SupportPage() {
 
           {faqs.length === 0 ? (
             <div className="text-center py-12" style={{ color: 'var(--shop-ink3)' }}>
-              <p className="text-4xl mb-3">💬</p>
+              <p className="text-3xl sm:text-4xl mb-3">💬</p>
               <p>등록된 FAQ가 없습니다</p>
             </div>
           ) : (

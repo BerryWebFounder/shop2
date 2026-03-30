@@ -86,7 +86,7 @@ export default function OrdersPage() {
   return (
     <>
       <Topbar title="주문 관리" />
-      <div className="flex-1 overflow-y-auto p-6 animate-page">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-page">
 
         {/* 상태별 빠른 필터 카드 */}
         <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 mb-5">

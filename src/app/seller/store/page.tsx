@@ -87,7 +87,7 @@ export default function SellerStorePage() {
   const themeColor = form.theme_color ?? store.theme_color
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
+    <div className="max-w-3xl mx-auto px-4 py-8">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <div>

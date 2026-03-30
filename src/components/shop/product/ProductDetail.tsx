@@ -41,9 +41,9 @@ export function ProductDetail({ product, images }: { product: Product; images: P
   }
 
   return (
-    <div style={{ maxWidth: 'var(--shop-max-w)', margin: '0 auto' }} className="px-6 md:px-8 py-10">
+    <div style={{ maxWidth: 'var(--shop-max-w)', margin: '0 auto' }} className="px-4 sm:px-6 md:px-8 py-8 md:py-10">
       {/* 브레드크럼 */}
-      <nav className="flex items-center gap-2 text-xs mb-8" style={{ color: 'var(--shop-ink3)' }}>
+      <nav className="flex items-center gap-2 text-xs mb-6 overflow-x-auto whitespace-nowrap" style={{ color: 'var(--shop-ink3)' }}>
         <Link href="/shop" className="hover:underline">홈</Link>
         <span>/</span>
         <Link href="/shop/products" className="hover:underline">상품</Link>
@@ -52,7 +52,7 @@ export function ProductDetail({ product, images }: { product: Product; images: P
         <span style={{ color: 'var(--shop-ink2)' }}>{product.name}</span>
       </nav>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 lg:gap-16">
         {/* 이미지 영역 */}
         <div>
           {/* 메인 이미지 */}

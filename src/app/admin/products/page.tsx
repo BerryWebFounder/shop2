@@ -103,7 +103,7 @@ export default function ProductsPage() {
   return (
     <>
       <Topbar title="상품 관리" />
-      <div className="flex-1 overflow-y-auto p-6 animate-page">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-page">
         <PageHeader title="상품 관리" subtitle={`총 ${total.toLocaleString()}개`}>
           <SearchBar placeholder="상품명, 번호 검색..." onSearch={handleSearch} />
           <Select value={status} onChange={e => { setStatus(e.target.value); setPage(1) }} className="w-36">

@@ -72,7 +72,7 @@ export default async function DashboardPage() {
   return (
     <>
       <Topbar title="대시보드" adminEmail={user?.email} />
-      <div className="flex-1 overflow-y-auto p-6 animate-page">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-page">
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-5">

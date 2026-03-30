@@ -61,7 +61,7 @@ export default function CategoriesPage() {
   return (
     <>
       <Topbar title="상품 분류 관리" />
-      <div className="flex-1 overflow-y-auto p-6 animate-page">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-page">
         <PageHeader title="상품 분류 관리" subtitle="대분류 / 중분류 / 소분류를 관리합니다">
           <Button variant="primary" onClick={() => openModal(1, null)}>+ 대분류 추가</Button>
         </PageHeader>

@@ -45,7 +45,8 @@
   --font-body:    'DM Sans', system-ui, sans-serif;
 
   /* 레이아웃 */
-  --shop-max-w: 1280px;
+  --shop-max-w:    1280px;
+  --shop-header:   56px;   /* 헤더 고정 높이 */
 
   /* 이징 */
   --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
@@ -54,12 +55,16 @@
 
 /* ── 기본 리셋 ───────────────────────────────────────────────────── */
 @layer base {
-  html,
-  body {
+  html {
     height: 100%;
+  }
+  body {
+    min-height: 100%;
     background-color: var(--bg);
     color: var(--text);
     font-family: var(--font-noto), 'Noto Sans KR', system-ui, sans-serif;
+    /* overflow는 각 레이아웃(admin/shop)에서 제어 */
+    -webkit-text-size-adjust: 100%; /* iOS 회전 시 폰트 크기 자동 조정 방지 */
   }
 
   *,
@@ -120,6 +125,8 @@
   font-family: var(--font-body);
   background-color: var(--shop-bg);
   color: var(--shop-ink);
+  /* 모바일 탭바 영역 확보 */
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 .shop-root * { box-sizing: border-box; }
 

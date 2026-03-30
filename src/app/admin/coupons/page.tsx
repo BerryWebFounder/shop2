@@ -132,7 +132,7 @@ export default function AdminCouponsPage() {
   return (
     <>
       <Topbar title="쿠폰 관리" />
-      <div className="flex-1 overflow-y-auto p-6 animate-page">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-page">
 
         {/* 통계 */}
         <div className="grid grid-cols-3 gap-3 mb-5">

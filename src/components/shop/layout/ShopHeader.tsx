@@ -192,6 +192,13 @@ export function ShopHeader({ storeName, isLoggedIn, userEmail }: ShopHeaderProps
           style={{ background: 'var(--shop-bg)', paddingTop: 'var(--shop-header)' }}
         >
           <div className="p-6 space-y-2">
+            {/* 모바일 검색창 */}
+            <form onSubmit={handleSearch} className="mb-4">
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-full" style={{ background: 'var(--shop-bg2)', border: '1px solid var(--shop-border)' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--shop-ink3)', flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="상품 검색..." className="bg-transparent outline-none flex-1 text-sm" style={{ color: 'var(--shop-ink)', fontFamily: 'var(--font-body)' }} />
+              </div>
+            </form>
             {NAV.map(n => (
               <Link
                 key={n.href}

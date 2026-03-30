@@ -31,7 +31,7 @@ export default async function SellerLayout({ children }: { children: React.React
     <div className="min-h-screen bg-gray-50">
       {/* 상단 네비게이션 */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           {/* 로고 */}
           <div className="flex items-center gap-3">
             <Link href="/seller" className="flex items-center gap-2">
@@ -75,7 +75,7 @@ function SellerNavLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+      className="px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors whitespace-nowrap"
     >
       {label}
     </Link>

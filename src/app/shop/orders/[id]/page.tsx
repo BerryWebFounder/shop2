@@ -29,7 +29,7 @@ export default async function ShopOrderDetailPage({
   const discountTotal = (order.coupon_discount ?? 0) + (order.point_used ?? 0)
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto' }} className="px-6 md:px-8 py-10">
+    <div style={{ maxWidth: 720, margin: '0 auto' }} className="px-4 sm:px-6 md:px-8 py-8 md:py-10">
       <Link href="/shop/orders" className="flex items-center gap-1.5 text-sm mb-6 transition-colors"
         style={{ color: 'var(--shop-ink3)' }}>
         ← 주문 내역

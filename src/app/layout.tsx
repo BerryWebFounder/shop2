@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
-      <body className="h-full overflow-hidden">{children}</body>
+      <body>{children}</body>
     </html>
   )
 }

@@ -4,7 +4,7 @@ export function ShopFooter({ storeName }: { storeName: string }) {
   return (
     <footer style={{ background: 'var(--shop-ink)', color: 'var(--shop-bg2)' }}>
       <div
-        className="mx-auto px-8 py-16"
+        className="mx-auto px-4 sm:px-8 py-10 md:py-16"
         style={{ maxWidth: 'var(--shop-max-w)' }}
       >
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">

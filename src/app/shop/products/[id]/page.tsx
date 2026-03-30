@@ -130,8 +130,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
       {/* ── 연관 상품 ───────────────────────────────────────── */}
       {related.length > 0 && (
-        <section className="px-6 md:px-8 pb-20" style={{ maxWidth: 'var(--shop-max-w)', margin: '0 auto' }}>
-          <h2 className="text-2xl mb-8" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
+        <section className="px-4 sm:px-6 md:px-8 pb-16" style={{ maxWidth: 'var(--shop-max-w)', margin: '0 auto' }}>
+          <h2 className="text-xl sm:text-2xl mb-6" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
             연관 상품
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">

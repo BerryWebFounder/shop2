@@ -30,7 +30,7 @@ export default function CartPage() {
   }
 
   return (
-    <div style={{ maxWidth: 'var(--shop-max-w)', margin: '0 auto' }} className="px-6 md:px-8 py-10">
+    <div style={{ maxWidth: 'var(--shop-max-w)', margin: '0 auto' }} className="px-4 sm:px-6 md:px-8 py-8 md:py-10">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>

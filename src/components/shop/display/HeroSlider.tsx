@@ -24,7 +24,7 @@ interface HeroSliderProps {
   height?:       string
 }
 
-export function HeroSlider({ slides, autoPlayMs = 5000, height = '85vh' }: HeroSliderProps) {
+export function HeroSlider({ slides, autoPlayMs = 5000, height = 'clamp(420px, 70vh, 720px)' }: HeroSliderProps) {
   const [current,  setCurrent]  = useState(0)
   const [paused,   setPaused]   = useState(false)
   const [animate,  setAnimate]  = useState(false)
@@ -88,7 +88,7 @@ export function HeroSlider({ slides, autoPlayMs = 5000, height = '85vh' }: HeroS
 
       {/* 콘텐츠 */}
       <div
-        className={`relative h-full flex flex-col justify-center px-8 md:px-16 lg:px-24 gap-4 ${textAlignClass}`}
+        className={`relative h-full flex flex-col justify-center px-5 md:px-12 lg:px-20 gap-3 ${textAlignClass}`}
         style={{ color: slide.text_color }}
       >
         {slide.subtitle && (
@@ -99,7 +99,7 @@ export function HeroSlider({ slides, autoPlayMs = 5000, height = '85vh' }: HeroS
         )}
         {slide.title && (
           <h1
-            className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight shop-animate-up"
+            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-tight shop-animate-up"
             style={{ fontFamily: 'var(--font-display)', animationDelay: '200ms', letterSpacing: '-0.02em' }}
           >
             {slide.title}
@@ -115,7 +115,7 @@ export function HeroSlider({ slides, autoPlayMs = 5000, height = '85vh' }: HeroS
           <div className="shop-animate-up" style={{ animationDelay: '400ms' }}>
             <Link
               href={slide.cta_url}
-              className="inline-block px-8 py-3.5 rounded-full text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
+              className="inline-block px-6 py-3 md:px-8 md:py-3.5 rounded-full text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
               style={ctaBtnStyle}
             >
               {slide.cta_text}

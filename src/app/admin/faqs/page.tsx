@@ -73,7 +73,7 @@ export default function AdminFAQsPage() {
   return (
     <>
       <Topbar title="FAQ 관리" />
-      <div className="flex-1 overflow-y-auto p-6 animate-page">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-page">
         <PageHeader title="FAQ 관리" subtitle={`총 ${faqs.length}개`}>
           <Button variant="primary" onClick={openCreate}>+ FAQ 등록</Button>
         </PageHeader>

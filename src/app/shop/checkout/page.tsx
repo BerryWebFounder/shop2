@@ -91,8 +91,8 @@ export default function CheckoutPage() {
     : `${items[0].name} 외 ${items.length - 1}건`
 
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto' }} className="px-6 md:px-8 py-10">
-      <h1 className="text-3xl mb-8" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
+    <div style={{ maxWidth: 960, margin: '0 auto' }} className="px-4 sm:px-6 md:px-8 py-8 md:py-10">
+      <h1 className="text-2xl sm:text-3xl mb-6" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
         {step === 'info' ? '주문하기' : '결제하기'}
       </h1>
 

@@ -64,7 +64,7 @@ export default function AnalyticsPage() {
   return (
     <>
       <Topbar title="분석 대시보드" />
-      <div className="flex-1 overflow-y-auto p-6 animate-page">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-page">
 
         {/* 헤더: 기간 + 탭 */}
         <PageHeader title="분석 대시보드" subtitle="데이터 기반 인사이트">

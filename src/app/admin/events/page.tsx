@@ -66,7 +66,7 @@ export default function EventsPage() {
   return (
     <>
       <Topbar title="이벤트 관리" />
-      <div className="flex-1 overflow-y-auto p-6 animate-page">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-page">
         <PageHeader title="이벤트 관리" subtitle="전시 이벤트를 등록 및 관리합니다">
           <Button variant="primary" onClick={openCreate}>+ 이벤트 등록</Button>
         </PageHeader>

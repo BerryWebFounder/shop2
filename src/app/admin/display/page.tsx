@@ -77,7 +77,7 @@ export default function DisplayPage() {
   return (
     <>
       <Topbar title="전시 관리" />
-      <div className="flex-1 overflow-y-auto p-6 animate-page">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-page">
         <PageHeader title="전시 관리" subtitle="쇼핑몰에 전시할 상품을 관리합니다">
           <Select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="w-36">
             <option value="">전체</option>

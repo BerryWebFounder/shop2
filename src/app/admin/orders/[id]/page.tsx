@@ -56,7 +56,7 @@ export default function AdminOrderDetailPage() {
   return (
     <>
       <Topbar title="주문 상세" />
-      <div className="flex-1 overflow-y-auto p-6 animate-page">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-page">
         <div className="flex items-center gap-3 mb-6">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>← 목록</Button>
           <span className="font-mono text-sm text-ink-2">{order.order_no}</span>

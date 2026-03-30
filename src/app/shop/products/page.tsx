@@ -40,7 +40,7 @@ export default async function ProductsPage({
 
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
+        <h1 className="text-2xl sm:text-3xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
           {q ? '"' + q + '" 검색 결과' : '전체 상품'}
         </h1>
         <span className="text-sm" style={{ color: 'var(--shop-ink3)' }}>
@@ -49,7 +49,7 @@ export default async function ProductsPage({
       </div>
 
       {/* 정렬 */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
         {[
           { value: 'newest',     label: '최신순' },
           { value: 'price_asc',  label: '낮은 가격' },

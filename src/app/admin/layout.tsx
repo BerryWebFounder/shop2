@@ -15,7 +15,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .single()
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden relative">
       <Sidebar storeName={settings?.store_name ?? '내 쇼핑몰'} />
       <main className="flex-1 flex flex-col overflow-hidden">
         <AdminProviders>

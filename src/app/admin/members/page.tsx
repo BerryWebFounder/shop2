@@ -68,7 +68,7 @@ export default function MembersPage() {
   return (
     <>
       <Topbar title="회원 관리" />
-      <div className="flex-1 overflow-y-auto p-6 animate-page">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 animate-page">
         <PageHeader title="회원 관리" subtitle={`전체 ${total.toLocaleString()}명`}>
           <SearchBar placeholder="이름, 이메일 검색..." onSearch={handleSearch} />
           <Select value={status} onChange={e => handleStatus(e.target.value)} className="w-36">
