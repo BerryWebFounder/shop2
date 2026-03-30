@@ -82,10 +82,8 @@ export async function POST(request: NextRequest) {
       .eq('id', order.id)
       .single()
 
-    // last_login 갱신 (회원 주문의 경우)
-    if (orderData.member_id) {
-      await supabase.rpc('update_member_last_login', { p_email: orderData.member_id }) // 실패해도 주문은 성공 처리
-    }
+    // ※ last_login 갱신은 로그인 시점에 처리하므로 주문 API에서는 생략합니다.
+    //   (이전 코드: update_member_last_login에 UUID를 email 인자로 잘못 전달하는 버그 수정)
 
     return NextResponse.json(
       { data: finalOrder, message: '주문이 완료되었습니다' },

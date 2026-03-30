@@ -14,6 +14,8 @@ export async function POST(request: NextRequest) {
   const supabase = createServiceClient()
   const userClient = await createClient()
 
+  // body를 한 번만 읽어 try/catch 전체에서 재사용
+  let orderIdTossFromBody: string | undefined
   try {
     const body   = await request.json()
     const parsed = confirmSchema.safeParse(body)
@@ -26,6 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { paymentKey, orderId: orderIdToss, amount } = parsed.data
+    orderIdTossFromBody = orderIdToss
 
     // ── 1. DB에서 결제 레코드 조회 (위변조 방지) ──────────────────
     const { data: payment, error: paymentFetchError } = await supabase
@@ -111,13 +114,12 @@ export async function POST(request: NextRequest) {
     if (err instanceof TossPaymentError) {
       console.error('[Payment Confirm] Toss Error:', err.code, err.message)
 
-      // 결제 실패 기록
-      const body = await request.json().catch(() => ({}))
-      if (body.orderId) {
+      // 결제 실패 기록 — 이미 파싱한 orderIdTossFromBody 재사용 (body 재읽기 불가)
+      if (orderIdTossFromBody) {
         await supabase
           .from('payments')
           .update({ status: 'aborted', toss_response: { code: err.code, message: err.message } })
-          .eq('order_id_toss', body.orderId)
+          .eq('order_id_toss', orderIdTossFromBody)
       }
 
       return NextResponse.json(

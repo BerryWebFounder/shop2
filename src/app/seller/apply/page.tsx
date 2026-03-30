@@ -104,6 +104,12 @@ export default function SellerApplyPage() {
         .insert({ user_id: user.id, ...form, store_slug: form.store_slug.toLowerCase() })
       if (dbErr) throw dbErr
 
+      // profiles.seller_status를 pending으로 표시 (미들웨어 접근 제어에 사용)
+      await supabase
+        .from('profiles')
+        .update({ seller_status: 'pending' })
+        .eq('id', user.id)
+
       router.push('/seller/apply/complete')
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '오류가 발생했습니다.')

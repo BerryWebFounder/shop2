@@ -46,6 +46,12 @@ const NAV = [
     ],
   },
   {
+    section: '소호몰',
+    items: [
+      { href: '/admin/sellers', icon: '🏪', label: '판매자 신청 관리' },
+    ],
+  },
+  {
     section: '리뷰',
     items: [
       { href: '/admin/reviews', icon: '⭐', label: '리뷰 관리' },

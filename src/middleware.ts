@@ -40,9 +40,9 @@ export async function middleware(request: NextRequest) {
 
   if (!user) return response
 
-  // ── 사용자 역할 조회 (members 테이블) ───────────────────────
+  // ── 사용자 역할 조회 (profiles 테이블) ──────────────────────
   const { data: profile } = await supabase
-    .from('members')
+    .from('profiles')
     .select('role, seller_status')
     .eq('id', user.id)
     .single()
