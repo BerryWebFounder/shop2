@@ -1,212 +1,186 @@
 -- ================================================================
--- 02. 뷰 (Views)
+-- 02_views.sql
+-- 전체 뷰 정의
 -- ================================================================
 
--- ── 회원 안전 뷰 (개인정보 마스킹) ─────────────────────────────────
--- 휴면/탈퇴 회원의 PII를 마스킹하여 노출
--- API Routes에서 이 뷰를 조회하면 실수로 원본을 노출하는 일이 없음
+-- ── 회원 안전 뷰 (PII 마스킹) ────────────────────────────────────
 DROP VIEW IF EXISTS member_safe_view CASCADE;
-
 CREATE VIEW member_safe_view AS
 SELECT
   id,
-  -- 이름: 휴면/탈퇴는 첫 글자 + ***
-  CASE
-    WHEN status IN ('dormant', 'withdrawn')
-      THEN SUBSTRING(name, 1, 1) || REPEAT('*', GREATEST(LENGTH(name) - 1, 1))
-    ELSE name
-  END AS name,
-  -- 이메일: 휴면/탈퇴는 아이디 첫 글자 + ***@도메인
-  CASE
-    WHEN status IN ('dormant', 'withdrawn')
-      THEN SPLIT_PART(email, '@', 1)::TEXT::TEXT[1:1] || -- 첫 글자
-           REPEAT('*', 3) || '@' ||
-           SPLIT_PART(email, '@', 2)
-    ELSE email
-  END AS email,
-  -- 전화: 휴면/탈퇴는 마스킹
-  CASE
-    WHEN status IN ('dormant', 'withdrawn') THEN '010-****-****'
-    ELSE phone
-  END AS phone,
-  -- 주소: 휴면/탈퇴는 숨김
-  CASE
-    WHEN status IN ('dormant', 'withdrawn') THEN '*** (개인정보 보호)'
-    ELSE address
-  END AS address,
-  status,
-  join_date,
-  last_login,
-  withdraw_date,
-  dormant_date,
-  created_at,
-  updated_at
+  CASE WHEN status IN ('dormant','withdrawn')
+    THEN SUBSTRING(name,1,1) || REPEAT('*', GREATEST(LENGTH(name)-1, 1))
+    ELSE name END                                          AS name,
+  CASE WHEN status IN ('dormant','withdrawn')
+    THEN SUBSTRING(SPLIT_PART(email,'@',1),1,1) || '***@' || SPLIT_PART(email,'@',2)
+    ELSE email END                                         AS email,
+  CASE WHEN status IN ('dormant','withdrawn') THEN '010-****-****' ELSE phone END AS phone,
+  CASE WHEN status IN ('dormant','withdrawn') THEN '*** (개인정보 보호)' ELSE address END AS address,
+  status, grade, join_date, last_login, withdraw_date, dormant_date, created_at, updated_at
 FROM members;
 
-COMMENT ON VIEW member_safe_view IS
-  'KISA 기준 개인정보 마스킹 뷰. 휴면/탈퇴 회원의 이름·이메일·전화·주소를 자동 마스킹합니다.';
-
--- ── 회원 목록 뷰 (최근 주문 포함) ───────────────────────────────────
+-- ── 회원 목록 뷰 (최근 주문 + 포인트 포함) ────────────────────────
 DROP VIEW IF EXISTS member_list_view CASCADE;
-
 CREATE VIEW member_list_view AS
 SELECT
-  m.id,
-  m.name,
-  m.email,
-  m.phone,
-  m.address,
-  m.status,
-  m.join_date,
-  m.last_login,
-  m.withdraw_date,
-  m.dormant_date,
-  -- 최근 주문 정보
-  lo.order_no   AS last_order_no,
-  lo.total_amount AS last_order_amount,
-  lo.created_at AS last_order_date,
-  lo.status     AS last_order_status
+  m.*,
+  lo.order_no AS last_order_no, lo.total_amount AS last_order_amount,
+  lo.created_at AS last_order_date, lo.status AS last_order_status
 FROM member_safe_view m
 LEFT JOIN LATERAL (
   SELECT order_no, total_amount, created_at, status
-  FROM orders
-  WHERE member_id = m.id
-  ORDER BY created_at DESC
-  LIMIT 1
+  FROM orders WHERE member_id = m.id ORDER BY created_at DESC LIMIT 1
 ) lo ON TRUE;
 
-COMMENT ON VIEW member_list_view IS
-  '회원 목록 페이지용 뷰. 마스킹 처리된 회원 정보와 최근 주문 1건을 포함합니다.';
+-- ── 회원 통계 뷰 (등급 + 포인트) ────────────────────────────────
+DROP VIEW IF EXISTS member_point_balance CASCADE;
+CREATE VIEW member_point_balance AS
+SELECT
+  member_id,
+  SUM(amount)::INT                                     AS balance,
+  SUM(amount) FILTER (WHERE amount > 0)::INT           AS total_earned,
+  ABS(SUM(amount) FILTER (WHERE amount < 0))::INT      AS total_used,
+  COUNT(*) FILTER (WHERE type = 'earn')::INT           AS earn_count,
+  MAX(created_at)                                      AS last_activity
+FROM member_points GROUP BY member_id;
 
--- ── 상품 목록 뷰 (분류명 포함) ───────────────────────────────────────
+DROP VIEW IF EXISTS member_stats_view CASCADE;
+CREATE VIEW member_stats_view AS
+SELECT
+  m.id, m.name, m.email, m.phone, m.status, m.grade,
+  m.total_purchase, m.annual_purchase, m.order_count, m.join_date, m.last_login, m.notes,
+  gc.label AS grade_label, gc.badge_color AS grade_color,
+  gc.point_rate, gc.discount_rate,
+  CASE
+    WHEN m.grade = 'bronze' THEN (SELECT min_annual_amount FROM member_grade_config WHERE grade='silver')
+    WHEN m.grade = 'silver' THEN (SELECT min_annual_amount FROM member_grade_config WHERE grade='gold')
+    WHEN m.grade = 'gold'   THEN (SELECT min_annual_amount FROM member_grade_config WHERE grade='vip')
+    ELSE NULL
+  END AS next_grade_amount,
+  COALESCE(pb.balance, 0)::INT AS point_balance
+FROM members m
+JOIN member_grade_config gc ON gc.grade = m.grade
+LEFT JOIN member_point_balance pb ON pb.member_id = m.id;
+
+-- ── 상품 목록 뷰 (분류명 + 할인율 + 대표 이미지) ─────────────────
 DROP VIEW IF EXISTS product_list_view CASCADE;
-
 CREATE VIEW product_list_view AS
 SELECT
-  p.id,
-  p.serial_no,
-  p.name,
-  p.summary,
-  p.price,
-  p.sale_price,
-  p.stock,
-  p.status,
-  p.created_at,
-  p.updated_at,
-  c1.id   AS cat1_id,
-  c1.name AS cat1_name,
-  c2.id   AS cat2_id,
-  c2.name AS cat2_name,
-  c3.id   AS cat3_id,
-  c3.name AS cat3_name,
-  -- 할인율 (sale_price가 있을 때만)
-  CASE
-    WHEN p.sale_price IS NOT NULL AND p.price > 0
-      THEN ROUND((1 - p.sale_price::NUMERIC / p.price) * 100, 1)
-    ELSE NULL
-  END AS discount_rate
+  p.id, p.serial_no, p.name, p.summary, p.price, p.sale_price, p.stock, p.status,
+  p.created_at, p.updated_at,
+  c1.id AS cat1_id, c1.name AS cat1_name,
+  c2.id AS cat2_id, c2.name AS cat2_name,
+  c3.id AS cat3_id, c3.name AS cat3_name,
+  CASE WHEN p.sale_price IS NOT NULL AND p.price > 0
+    THEN ROUND((1 - p.sale_price::NUMERIC / p.price) * 100, 1)
+    ELSE NULL END AS discount_rate,
+  pi.public_url AS primary_image_url
 FROM products p
 LEFT JOIN categories c1 ON c1.id = p.cat1_id
 LEFT JOIN categories c2 ON c2.id = p.cat2_id
-LEFT JOIN categories c3 ON c3.id = p.cat3_id;
+LEFT JOIN categories c3 ON c3.id = p.cat3_id
+LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = TRUE;
 
-COMMENT ON VIEW product_list_view IS
-  '상품 목록 페이지용 뷰. 분류명과 할인율을 포함합니다.';
-
--- ── 전시 목록 뷰 (상품 + 이벤트 join) ───────────────────────────────
+-- ── 전시 목록 뷰 ────────────────────────────────────────────────
 DROP VIEW IF EXISTS display_list_view CASCADE;
-
 CREATE VIEW display_list_view AS
 SELECT
-  d.id,
-  d.display_type,
-  d.start_date,
-  d.end_date,
-  d.sort_order,
-  d.is_active,
-  d.created_at,
-  d.updated_at,
-  -- 상품 정보
-  p.id         AS product_id,
-  p.serial_no  AS product_serial_no,
-  p.name       AS product_name,
-  p.price      AS product_price,
-  p.sale_price AS product_sale_price,
-  p.stock      AS product_stock,
-  p.status     AS product_status,
-  -- 이벤트 정보
-  e.id         AS event_id,
-  e.name       AS event_name,
-  e.start_date AS event_start_date,
-  e.end_date   AS event_end_date,
-  e.status     AS event_status
+  d.id, d.display_type, d.start_date, d.end_date, d.sort_order, d.is_active,
+  p.id AS product_id, p.serial_no AS product_serial_no, p.name AS product_name,
+  p.price AS product_price, p.sale_price AS product_sale_price,
+  p.stock AS product_stock, p.status AS product_status,
+  e.id AS event_id, e.name AS event_name,
+  e.start_date AS event_start_date, e.end_date AS event_end_date, e.status AS event_status
 FROM display_items d
-JOIN products p      ON p.id = d.product_id
-LEFT JOIN events e   ON e.id = d.event_id;
+JOIN products p    ON p.id = d.product_id
+LEFT JOIN events e ON e.id = d.event_id;
 
-COMMENT ON VIEW display_list_view IS
-  '전시 관리 목록 뷰. 상품과 이벤트 정보를 포함합니다.';
+-- ── 주문 상세 뷰 (회원 + 쿠폰 + 송장) ────────────────────────────
+DROP VIEW IF EXISTS order_detail_view CASCADE;
+CREATE VIEW order_detail_view AS
+SELECT
+  o.*,
+  m.name AS member_name, m.email AS member_email, m.phone AS member_phone,
+  c.code AS coupon_code, c.name AS coupon_name,
+  s.carrier_code, s.carrier_name, s.tracking_number, s.tracking_url,
+  s.shipped_at, s.delivered_at AS shipment_delivered_at
+FROM orders o
+LEFT JOIN members m         ON m.id = o.member_id
+LEFT JOIN coupons c         ON c.id = o.coupon_id
+LEFT JOIN order_shipments s ON s.order_id = o.id;
 
--- ── 대시보드 통계 뷰 ─────────────────────────────────────────────
+-- ── 쿠폰 통계 뷰 ────────────────────────────────────────────────
+DROP VIEW IF EXISTS coupon_stats_view CASCADE;
+CREATE VIEW coupon_stats_view AS
+SELECT
+  c.*,
+  COUNT(cu.id)::INT                      AS actual_usage_count,
+  COALESCE(SUM(cu.discount_amt), 0)::INT AS total_discount_given,
+  CASE
+    WHEN c.valid_until IS NULL THEN 'active'
+    WHEN c.valid_until < NOW() THEN 'expired'
+    WHEN NOT c.is_active       THEN 'inactive'
+    ELSE 'active'
+  END AS computed_status
+FROM coupons c
+LEFT JOIN coupon_usages cu ON cu.coupon_id = c.id
+GROUP BY c.id;
+
+-- ── 상품 평점 집계 뷰 ────────────────────────────────────────────
+DROP VIEW IF EXISTS product_rating_summary CASCADE;
+CREATE VIEW product_rating_summary AS
+SELECT
+  product_id,
+  COUNT(*)::INT                           AS review_count,
+  ROUND(AVG(rating)::NUMERIC, 1)          AS avg_rating,
+  COUNT(*) FILTER (WHERE rating = 5)::INT AS star5,
+  COUNT(*) FILTER (WHERE rating = 4)::INT AS star4,
+  COUNT(*) FILTER (WHERE rating = 3)::INT AS star3,
+  COUNT(*) FILTER (WHERE rating = 2)::INT AS star2,
+  COUNT(*) FILTER (WHERE rating = 1)::INT AS star1
+FROM product_reviews WHERE status = 'approved'
+GROUP BY product_id;
+
+-- ── 대시보드 통계 뷰 ────────────────────────────────────────────
 DROP VIEW IF EXISTS dashboard_stats_view CASCADE;
-
 CREATE VIEW dashboard_stats_view AS
-WITH
-  today_range AS (
-    SELECT
-      DATE_TRUNC('day', NOW() AT TIME ZONE 'Asia/Seoul') AS start_of_today,
-      DATE_TRUNC('month', NOW() AT TIME ZONE 'Asia/Seoul') AS start_of_month
-  )
+WITH today_range AS (
+  SELECT
+    DATE_TRUNC('day',   NOW() AT TIME ZONE 'Asia/Seoul') AS start_of_today,
+    DATE_TRUNC('month', NOW() AT TIME ZONE 'Asia/Seoul') AS start_of_month
+)
 SELECT
-  -- 회원
-  (SELECT COUNT(*) FROM members WHERE status <> 'withdrawn')                        AS total_members,
-  (SELECT COUNT(*) FROM members WHERE join_date >= (SELECT start_of_month FROM today_range)) AS new_members_this_month,
-  (SELECT COUNT(*) FROM members WHERE status = 'active')                            AS active_members,
-  (SELECT COUNT(*) FROM members WHERE status = 'dormant')                           AS dormant_members,
-  -- 주문
-  (SELECT COUNT(*) FROM orders WHERE created_at >= (SELECT start_of_today FROM today_range))       AS today_orders,
-  (SELECT COALESCE(SUM(total_amount), 0) FROM orders
-   WHERE created_at >= (SELECT start_of_today FROM today_range) AND status <> 'cancelled')          AS today_revenue,
-  -- 상품
-  (SELECT COUNT(*) FROM products)                                                   AS total_products,
-  (SELECT COUNT(*) FROM products WHERE status = 'sale')                             AS on_sale_products,
-  (SELECT COUNT(*) FROM display_items WHERE is_active = TRUE)                       AS displayed_products,
-  -- 재고 부족 (5개 이하, 판매중지 제외)
-  (SELECT COUNT(*) FROM products WHERE stock <= 5 AND status <> 'stop')             AS low_stock_count;
+  (SELECT COUNT(*)   FROM members WHERE status <> 'withdrawn')                       AS total_members,
+  (SELECT COUNT(*)   FROM members WHERE join_date >= (SELECT start_of_month FROM today_range)) AS new_members_this_month,
+  (SELECT COUNT(*)   FROM members WHERE status = 'active')                           AS active_members,
+  (SELECT COUNT(*)   FROM members WHERE status = 'dormant')                          AS dormant_members,
+  (SELECT COUNT(*)   FROM orders  WHERE created_at >= (SELECT start_of_today FROM today_range)) AS today_orders,
+  (SELECT COALESCE(SUM(total_amount),0) FROM orders
+   WHERE  created_at >= (SELECT start_of_today FROM today_range) AND status <> 'cancelled') AS today_revenue,
+  (SELECT COUNT(*)   FROM products)                                                  AS total_products,
+  (SELECT COUNT(*)   FROM products WHERE status = 'sale')                            AS on_sale_products,
+  (SELECT COUNT(*)   FROM display_items WHERE is_active = TRUE)                      AS displayed_products,
+  (SELECT COUNT(*)   FROM products WHERE stock <= 5 AND status <> 'stop')            AS low_stock_count;
 
-COMMENT ON VIEW dashboard_stats_view IS
-  '대시보드 핵심 통계 뷰. 매 조회마다 실시간으로 계산됩니다.';
-
--- ── 주간 매출 집계 뷰 ───────────────────────────────────────────────
-DROP VIEW IF EXISTS weekly_sales_view CASCADE;
-
-CREATE VIEW weekly_sales_view AS
+-- ── 결제 통계 뷰 ────────────────────────────────────────────────
+DROP VIEW IF EXISTS payment_stats_view CASCADE;
+CREATE VIEW payment_stats_view AS
 SELECT
-  created_at::DATE          AS sale_date,
-  COUNT(*)::BIGINT          AS order_count,
-  SUM(total_amount)::BIGINT AS revenue
-FROM orders
-WHERE
-  created_at >= NOW() - INTERVAL '7 days'
-  AND status <> 'cancelled'
-GROUP BY created_at::DATE
-ORDER BY sale_date;
+  DATE_TRUNC('day', created_at AT TIME ZONE 'Asia/Seoul')::DATE AS date,
+  method,
+  COUNT(*) FILTER (WHERE status = 'done')::INT                  AS success_count,
+  COUNT(*) FILTER (WHERE status IN ('canceled','aborted'))::INT AS fail_count,
+  SUM(amount - cancel_amount) FILTER (WHERE status = 'done')::BIGINT AS net_revenue
+FROM payments
+GROUP BY DATE_TRUNC('day', created_at AT TIME ZONE 'Asia/Seoul')::DATE, method
+ORDER BY date DESC;
 
-COMMENT ON VIEW weekly_sales_view IS
-  '최근 7일 매출 집계 뷰.';
-
--- ── 재고 부족 상품 뷰 ──────────────────────────────────────────────
+-- ── 재고 부족 뷰 ────────────────────────────────────────────────
 DROP VIEW IF EXISTS low_stock_view CASCADE;
-
 CREATE VIEW low_stock_view AS
 SELECT
-  p.id,
-  p.serial_no,
-  p.name,
-  p.stock,
-  p.status,
-  c1.name AS cat1_name,
-  c2.name AS cat2_name,
+  p.id, p.serial_no, p.name, p.stock, p.status,
+  c1.name AS cat1_name, c2.name AS cat2_name,
   CASE
     WHEN p.stock = 0 THEN 'out'
     WHEN p.stock <= 3 THEN 'critical'
@@ -218,8 +192,5 @@ LEFT JOIN categories c1 ON c1.id = p.cat1_id
 LEFT JOIN categories c2 ON c2.id = p.cat2_id
 WHERE p.stock <= 10 AND p.status <> 'stop'
 ORDER BY p.stock ASC, p.name;
-
-COMMENT ON VIEW low_stock_view IS
-  '재고 부족 상품 뷰. 재고 10개 이하 상품을 재고 수 기준 오름차순으로 반환합니다.';
 
 SELECT 'Views ready' AS status;
