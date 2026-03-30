@@ -1,13 +1,12 @@
 'use client'
 // ================================================================
 // src/app/login/page.tsx
-// useSearchParams()는 Suspense 경계 내부에서만 사용 가능 (Next.js 15)
+// 로그인 성공 후 profiles.role을 직접 조회해서 역할별 분기
 // ================================================================
 import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-// ── useSearchParams를 사용하는 실제 폼 컴포넌트 ──────────────────
 function LoginForm() {
   const router       = useRouter()
   const searchParams = useSearchParams()
@@ -22,18 +21,38 @@ function LoginForm() {
     setLoading(true)
 
     const supabase = createClient()
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (authError) {
+    // 1. 로그인
+    const { data: authData, error: authError } =
+      await supabase.auth.signInWithPassword({ email, password })
+
+    if (authError || !authData.user) {
       setError('아이디 또는 비밀번호가 올바르지 않습니다.')
       setLoading(false)
       return
     }
 
-    // 미들웨어가 role을 보고 /admin, /seller, /shop 으로 리다이렉트합니다.
-    // ?next 파라미터가 있으면 해당 경로로 우선 이동합니다.
+    // 2. profiles에서 role 직접 조회
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', authData.user.id)
+      .single()
+
+    const role = profile?.role ?? 'customer'
+
+    // 3. ?next 파라미터 우선, 없으면 role에 따라 분기
     const next = searchParams.get('next')
-    router.push(next && next.startsWith('/') ? next : '/shop')
+    if (next && next.startsWith('/')) {
+      router.push(next)
+    } else if (role === 'admin') {
+      router.push('/admin/dashboard')
+    } else if (role === 'seller') {
+      router.push('/seller')
+    } else {
+      router.push('/shop')
+    }
+
     router.refresh()
   }
 
@@ -83,14 +102,12 @@ function LoginForm() {
   )
 }
 
-// ── 페이지 컴포넌트 — LoginForm을 Suspense로 감쌈 ─────────────────
 export default function LoginPage() {
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center"
       style={{ backgroundImage: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79,142,247,0.1) 0%, transparent 70%)' }}
     >
       <div className="w-[380px] bg-bg-2 border border-border-2 rounded-2xl shadow-2xl p-10">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2.5 mb-2">
             <div className="w-9 h-9 bg-accent rounded-xl flex items-center justify-center text-xl">🛍️</div>
@@ -99,7 +116,6 @@ export default function LoginPage() {
           <p className="text-xs text-ink-3 tracking-wider mt-1">쇼핑몰 관리 시스템</p>
         </div>
 
-        {/* useSearchParams를 쓰는 폼은 반드시 Suspense 안에 */}
         <Suspense fallback={
           <div className="flex justify-center py-8">
             <span className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
