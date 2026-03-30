@@ -30,10 +30,12 @@ export default function CheckoutPage() {
   const finalTotal = Math.max(0, total + shippingFee - discount.coupon_discount - discount.point_used)
   const handleDiscountChange = useCallback((d: OrderDiscountForm) => setDiscount(d), [])
 
+  const [isGuest, setIsGuest] = useState(false)
+
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return
+      if (!user) { setIsGuest(true); return }
       setMemberEmail(user.email ?? null)
       supabase.from('members').select('id, name, phone').eq('email', user.email ?? '').single()
         .then(({ data }) => {
@@ -93,6 +95,21 @@ export default function CheckoutPage() {
       <h1 className="text-3xl mb-8" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
         {step === 'info' ? '주문하기' : '결제하기'}
       </h1>
+
+      {/* 비로그인 안내 배너 */}
+      {isGuest && step === 'info' && (
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl mb-6 text-sm"
+          style={{ background: 'rgba(196,80,58,0.07)', border: '1px solid rgba(196,80,58,0.2)' }}>
+          <span style={{ color: 'var(--shop-ink2)' }}>
+            로그인하면 포인트·쿠폰 할인 및 주문 내역 조회를 이용할 수 있습니다.
+          </span>
+          <a href={`/shop/auth/login?redirect=/shop/checkout`}
+            className="ml-4 shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
+            style={{ background: 'var(--shop-ink)', color: 'white' }}>
+            로그인
+          </a>
+        </div>
+      )}
 
       {step === 'info' ? (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">

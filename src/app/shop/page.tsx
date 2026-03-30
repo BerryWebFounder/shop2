@@ -40,7 +40,7 @@ export default async function ShopHomePage() {
     supabase.from('display_banners').select('*').eq('zone', 'main').order('sort_order'),
     supabase.from('display_popups').select('*').order('sort_order'),
     supabase.from('products')
-      .select('id, name, price, sale_price')
+      .select('id, name, price, sale_price, product_images!left(public_url, is_primary)')
       .eq('status', 'sale')
       .order('created_at', { ascending: false })
       .limit(8),
@@ -97,14 +97,24 @@ export default async function ShopHomePage() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {(newProducts ?? []).map(product => {
-              const price = product.sale_price ?? product.price
+              const price    = product.sale_price ?? product.price
+              const imgArr   = (product as { product_images?: { public_url: string; is_primary: boolean }[] }).product_images
+              const imgUrl   = imgArr?.find(i => i.is_primary)?.public_url ?? imgArr?.[0]?.public_url
               return (
                 <Link key={product.id} href={'/shop/products/' + product.id} className="group block">
                   <div
-                    className="rounded-2xl mb-3 flex items-center justify-center aspect-square text-4xl"
+                    className="rounded-2xl mb-3 overflow-hidden aspect-square flex items-center justify-center text-4xl"
                     style={{ background: 'var(--shop-bg2)', color: 'var(--shop-border)' }}
                   >
-                    📷
+                    {imgUrl ? (
+                      <img
+                        src={imgUrl}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      '📷'
+                    )}
                   </div>
                   <p className="text-sm font-medium mb-1 line-clamp-2" style={{ color: 'var(--shop-ink)' }}>
                     {product.name}
