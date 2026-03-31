@@ -118,6 +118,13 @@ export function ShopHeader({ storeName, isLoggedIn, userEmail }: ShopHeaderProps
             {isLoggedIn ? (
               <div className="hidden md:flex items-center gap-2">
                 <Link
+                  href="/seller/apply"
+                  className="text-xs px-3 py-1.5 rounded-full transition-colors"
+                  style={{ color: 'var(--shop-ink2)' }}
+                >
+                  소호몰 신청
+                </Link>
+                <Link
                   href="/shop/orders"
                   className="text-xs px-3 py-1.5 rounded-full transition-colors"
                   style={{ color: 'var(--shop-ink2)', border: '1px solid var(--shop-border)' }}
@@ -134,6 +141,13 @@ export function ShopHeader({ storeName, isLoggedIn, userEmail }: ShopHeaderProps
               </div>
             ) : (
               <div className="hidden md:flex items-center gap-2">
+                <Link
+                  href="/seller/apply"
+                  className="text-xs px-3 py-1.5 rounded-full transition-colors"
+                  style={{ color: 'var(--shop-ink2)' }}
+                >
+                  소호몰 신청
+                </Link>
                 <Link
                   href="/shop/auth/login"
                   className="text-xs px-3 py-1.5 rounded-full transition-colors"
@@ -210,6 +224,9 @@ export function ShopHeader({ storeName, isLoggedIn, userEmail }: ShopHeaderProps
               </Link>
             ))}
             <div className="pt-4 flex flex-col gap-2">
+              <Link href="/seller/apply" className="block py-2 text-sm font-medium border-b" style={{ color: 'var(--shop-accent)', borderColor: 'var(--shop-border)' }}>
+                🏪 소호몰 신청하기
+              </Link>
               {isLoggedIn ? (
                 <>
                   <Link href="/shop/orders" className="block py-2 text-sm" style={{ color: 'var(--shop-ink2)' }}>주문내역</Link>

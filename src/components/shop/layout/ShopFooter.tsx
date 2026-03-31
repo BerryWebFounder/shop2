@@ -7,7 +7,7 @@ export function ShopFooter({ storeName }: { storeName: string }) {
         className="mx-auto px-4 sm:px-8 py-10 md:py-16"
         style={{ maxWidth: 'var(--shop-max-w)' }}
       >
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10 mb-12">
           {/* 브랜드 */}
           <div className="md:col-span-2">
             <div
@@ -31,6 +31,28 @@ export function ShopFooter({ storeName }: { storeName: string }) {
                   <Link href="/shop/products" className="transition-colors hover:text-white" style={{ color: 'var(--shop-bg3)' }}>{l}</Link>
                 </li>
               ))}
+            </ul>
+          </div>
+
+          {/* 판매자 */}
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--shop-ink3)' }}>판매자</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/seller/apply" className="transition-colors hover:text-white" style={{ color: 'var(--shop-bg3)' }}>
+                  소호몰 신청
+                </Link>
+              </li>
+              <li>
+                <Link href="/seller" className="transition-colors hover:text-white" style={{ color: 'var(--shop-bg3)' }}>
+                  판매자 로그인
+                </Link>
+              </li>
+              <li>
+                <Link href="/shop/support" className="transition-colors hover:text-white" style={{ color: 'var(--shop-bg3)' }}>
+                  판매자 문의
+                </Link>
+              </li>
             </ul>
           </div>
 
