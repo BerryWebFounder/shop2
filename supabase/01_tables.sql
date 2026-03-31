@@ -96,7 +96,14 @@ CREATE INDEX IF NOT EXISTS idx_points_member  ON member_points (member_id, creat
 CREATE INDEX IF NOT EXISTS idx_points_type    ON member_points (type);
 CREATE INDEX IF NOT EXISTS idx_points_expires ON member_points (expires_at) WHERE expires_at IS NOT NULL;
 
--- (profiles 테이블은 step2 앞부분에서 CREATE TABLE로 생성됨)
+-- ── 플랫폼 Auth 프로필 (V2 소호몰 역할 관리) ─────────────────────
+-- Supabase Auth users 테이블을 확장하는 profiles 테이블
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'customer'
+    CHECK (role IN ('customer','seller','admin')),
+  ADD COLUMN IF NOT EXISTS seller_status TEXT DEFAULT NULL
+    CHECK (seller_status IN ('pending','approved','rejected','suspended'));
+CREATE INDEX IF NOT EXISTS idx_profiles_role ON profiles(role);
 
 -- ================================================================
 -- B. 상품 & 카테고리
@@ -138,7 +145,7 @@ CREATE TABLE IF NOT EXISTS products (
   status        TEXT        NOT NULL DEFAULT 'stop'
                   CHECK (status IN ('sale','soldout','stop','active','draft','sold_out','hidden')),
   -- V2 소호몰 필드 (store_id IS NOT NULL일 때 사용)
-  store_id      UUID,  -- FK to seller_stores added after that table is created
+  store_id      UUID        REFERENCES seller_stores(id) ON DELETE CASCADE,
   compare_price INT,
   cost_price    INT,
   category      TEXT,
@@ -446,7 +453,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   sale_price       INT,
   quantity         INT         NOT NULL DEFAULT 1 CHECK (quantity > 0),
   -- V2 소호몰 전용
-  store_id         UUID,  -- FK to seller_stores added after that table is created
+  store_id         UUID        REFERENCES seller_stores(id),
   total_price      INT         NOT NULL DEFAULT 0,
   options_snapshot JSONB       DEFAULT '{}',
   product_image    TEXT,
@@ -509,18 +516,12 @@ CREATE INDEX IF NOT EXISTS idx_shipments_order    ON order_shipments (order_id);
 CREATE INDEX IF NOT EXISTS idx_shipments_tracking ON order_shipments (carrier_code, tracking_number);
 
 -- ── 결제 (Toss Payments) ─────────────────────────────────────────
-DO $$ BEGIN
-  CREATE TYPE payment_method AS ENUM (
-    'card','virtual_account','account_transfer','mobile','kakaopay','naverpay','tosspay'
-  );
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  CREATE TYPE payment_status AS ENUM (
-    'ready','in_progress','waiting_for_deposit','done','canceled','partial_canceled','aborted','expired'
-  );
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+CREATE TYPE IF NOT EXISTS payment_method AS ENUM (
+  'card','virtual_account','account_transfer','mobile','kakaopay','naverpay','tosspay'
+);
+CREATE TYPE IF NOT EXISTS payment_status AS ENUM (
+  'ready','in_progress','waiting_for_deposit','done','canceled','partial_canceled','aborted','expired'
+);
 
 CREATE TABLE IF NOT EXISTS payments (
   id                     UUID            PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -557,18 +558,12 @@ CREATE INDEX IF NOT EXISTS idx_payments_created ON payments (created_at DESC);
 -- E. 고객센터
 -- ================================================================
 
-DO $$ BEGIN
-  CREATE TYPE inquiry_category AS ENUM (
-    'order','shipping','return','product','account','coupon','other'
-  );
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-DO $$ BEGIN
-  CREATE TYPE inquiry_status AS ENUM (
-    'pending','in_progress','answered','closed'
-  );
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+CREATE TYPE IF NOT EXISTS inquiry_category AS ENUM (
+  'order','shipping','return','product','account','coupon','other'
+);
+CREATE TYPE IF NOT EXISTS inquiry_status AS ENUM (
+  'pending','in_progress','answered','closed'
+);
 
 CREATE TABLE IF NOT EXISTS inquiries (
   id               UUID             PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -710,18 +705,6 @@ CREATE TABLE IF NOT EXISTS seller_stores (
 );
 CREATE INDEX IF NOT EXISTS idx_seller_stores_owner ON seller_stores (owner_id);
 CREATE INDEX IF NOT EXISTS idx_seller_stores_slug  ON seller_stores (slug);
-
--- FK: products.store_id → seller_stores (의존 순서 때문에 여기서 추가)
-ALTER TABLE products
-  ADD CONSTRAINT fk_products_store
-  FOREIGN KEY (store_id) REFERENCES seller_stores(id) ON DELETE CASCADE
-  NOT VALID;
-
--- FK: order_items.store_id → seller_stores
-ALTER TABLE order_items
-  ADD CONSTRAINT fk_order_items_store
-  FOREIGN KEY (store_id) REFERENCES seller_stores(id)
-  NOT VALID;
 
 -- ── 판매자 알림 ───────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS seller_notifications (

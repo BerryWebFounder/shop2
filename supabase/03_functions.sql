@@ -315,7 +315,7 @@ LANGUAGE sql STABLE SECURITY DEFINER AS $$
     COUNT(*)::BIGINT          AS order_count
   FROM orders
   WHERE created_at >= NOW() - INTERVAL '7 days' AND status <> 'cancelled'
-  GROUP BY created_at::DATE ORDER BY created_at::DATE;
+  GROUP BY created_at::DATE ORDER BY sale_date;
 $$;
 
 -- ── 일별 매출 집계 (기간 지정) ──────────────────────────────────
@@ -328,7 +328,7 @@ LANGUAGE sql STABLE SECURITY DEFINER AS $$
     COUNT(o.id)::BIGINT, COALESCE(AVG(o.total_amount),0)::NUMERIC
   FROM generate_series(p_from::TIMESTAMPTZ, p_to::TIMESTAMPTZ, '1 day') gs
   LEFT JOIN orders o ON o.created_at::DATE = gs::DATE AND o.status NOT IN ('cancelled','returned')
-  GROUP BY gs::DATE ORDER BY gs::DATE;
+  GROUP BY gs::DATE ORDER BY date;
 $$;
 
 -- ── 월별 매출 집계 ───────────────────────────────────────────────
@@ -358,7 +358,7 @@ LANGUAGE sql STABLE SECURITY DEFINER AS $$
       WHEN 4 THEN '목' WHEN 5 THEN '금' WHEN 6 THEN '토' END,
     SUM(total_amount)::BIGINT, COUNT(*)::BIGINT
   FROM orders WHERE created_at::DATE BETWEEN p_from AND p_to AND status NOT IN ('cancelled','returned')
-  GROUP BY EXTRACT(DOW FROM created_at)::INT ORDER BY EXTRACT(DOW FROM created_at)::INT;
+  GROUP BY EXTRACT(DOW FROM created_at)::INT ORDER BY weekday;
 $$;
 
 -- ── 상태별 주문 통계 (단일 정의 — order_stats_functions.sql + order_management_schema.sql 중복 제거) ──
@@ -369,7 +369,7 @@ CREATE OR REPLACE FUNCTION order_stats_by_status(
 LANGUAGE sql STABLE SECURITY DEFINER AS $$
   SELECT status, COUNT(*)::BIGINT, SUM(total_amount)::BIGINT
   FROM orders WHERE created_at::DATE BETWEEN p_from AND p_to
-  GROUP BY status ORDER BY COUNT(*) DESC;
+  GROUP BY status ORDER BY count DESC;
 $$;
 
 -- ── 대시보드 오늘 KPI ────────────────────────────────────────────

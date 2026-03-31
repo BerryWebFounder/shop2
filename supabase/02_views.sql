@@ -96,19 +96,14 @@ JOIN products p    ON p.id = d.product_id
 LEFT JOIN events e ON e.id = d.event_id;
 
 -- ── 주문 상세 뷰 (회원 + 쿠폰 + 송장) ────────────────────────────
--- o.* 에 tracking_number/carrier_code/shipped_at 이미 포함 → shipments는 별칭 사용
 DROP VIEW IF EXISTS order_detail_view CASCADE;
 CREATE VIEW order_detail_view AS
 SELECT
   o.*,
   m.name AS member_name, m.email AS member_email, m.phone AS member_phone,
   c.code AS coupon_code, c.name AS coupon_name,
-  s.carrier_code    AS shipment_carrier_code,
-  s.carrier_name    AS shipment_carrier_name,
-  s.tracking_number AS shipment_tracking_number,
-  s.tracking_url    AS shipment_tracking_url,
-  s.shipped_at      AS shipment_shipped_at,
-  s.delivered_at    AS shipment_delivered_at
+  s.carrier_code, s.carrier_name, s.tracking_number, s.tracking_url,
+  s.shipped_at, s.delivered_at AS shipment_delivered_at
 FROM orders o
 LEFT JOIN members m         ON m.id = o.member_id
 LEFT JOIN coupons c         ON c.id = o.coupon_id
@@ -178,7 +173,7 @@ SELECT
   SUM(amount - cancel_amount) FILTER (WHERE status = 'done')::BIGINT AS net_revenue
 FROM payments
 GROUP BY DATE_TRUNC('day', created_at AT TIME ZONE 'Asia/Seoul')::DATE, method
-ORDER BY DATE_TRUNC('day', created_at AT TIME ZONE 'Asia/Seoul')::DATE DESC;
+ORDER BY date DESC;
 
 -- ── 재고 부족 뷰 ────────────────────────────────────────────────
 DROP VIEW IF EXISTS low_stock_view CASCADE;
