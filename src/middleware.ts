@@ -1,9 +1,13 @@
 // ============================================================
-// middleware.ts (프로젝트 루트)
+// middleware.ts
 // 역할 기반 라우팅 & 접근 제어
+//
+// profiles 조회는 service role key를 쓰는 별도 클라이언트로 처리.
+// anon key 클라이언트는 RLS에 막혀 조회가 실패할 수 있기 때문.
 // ============================================================
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -11,6 +15,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   let response = NextResponse.next({ request: { headers: request.headers } })
 
+  // ── 세션 확인용 (anon key + 쿠키) ───────────────────────────
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -40,15 +45,22 @@ export async function middleware(request: NextRequest) {
 
   if (!user) return response
 
-  // ── 사용자 역할 조회 (profiles 테이블) ──────────────────────
-  const { data: profile } = await supabase
+  // ── profiles 조회: service role key로 RLS 우회 ───────────────
+  // anon key 클라이언트는 RLS 정책에 따라 조회가 막힐 수 있음
+  const serviceClient = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+
+  const { data: profile } = await serviceClient
     .from('profiles')
     .select('role, seller_status')
     .eq('id', user.id)
     .single()
 
-  const role         = profile?.role         || 'customer'
-  const sellerStatus = profile?.seller_status
+  const role         = profile?.role         ?? 'customer'
+  const sellerStatus = profile?.seller_status ?? null
 
   // ── /admin 접근 제어 ────────────────────────────────────────
   if (pathname.startsWith('/admin')) {
@@ -73,10 +85,10 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // ── 이미 로그인된 사용자의 로그인/회원가입 페이지 리다이렉트 ──
+  // ── 이미 로그인된 사용자의 /login 접근 → role에 따라 분기 ──
   if ((pathname === '/login' || pathname === '/signup') && user) {
-    if (role === 'admin')  return NextResponse.redirect(new URL('/admin',  request.url))
-    if (role === 'seller') return NextResponse.redirect(new URL('/seller', request.url))
+    if (role === 'admin')  return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+    if (role === 'seller') return NextResponse.redirect(new URL('/seller',           request.url))
     return NextResponse.redirect(new URL('/shop', request.url))
   }
 
