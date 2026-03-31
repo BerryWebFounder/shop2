@@ -1,14 +1,14 @@
 // ================================================================
 // src/app/seller/layout.tsx
-// 판매자 대시보드 공통 레이아웃
-// — 상단 네비게이션 바 + 인증 검증
+// role 확인을 서버 컴포넌트에서 처리
 // ================================================================
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 
 const NAV_ITEMS = [
-  { href: '/seller',          label: '대시보드', exact: true },
+  { href: '/seller',          label: '대시보드' },
   { href: '/seller/products', label: '상품 관리' },
   { href: '/seller/orders',   label: '주문 / 정산' },
   { href: '/seller/store',    label: '소호몰 설정' },
@@ -16,11 +16,31 @@ const NAV_ITEMS = [
 
 export default async function SellerLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
+  // 1. 로그인 확인
+  const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login?next=/seller')
 
-  // 소호몰명 조회 (없으면 빈 문자열)
+  // 2. role 확인 — service role key로 RLS 우회
+  const svc = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+  const { data: profile } = await svc
+    .from('profiles')
+    .select('role, seller_status')
+    .eq('id', user.id)
+    .single()
+
+  const role         = profile?.role         ?? 'customer'
+  const sellerStatus = profile?.seller_status ?? null
+
+  // /seller/apply 는 누구나 접근 가능
+  // 나머지는 seller 또는 admin만
+  // (apply/complete, apply/pending은 pathname이 /seller/apply/... 이므로 별도 처리)
+
+  // 3. 소호몰 정보 조회
   const { data: store } = await supabase
     .from('seller_stores')
     .select('store_name, slug')
@@ -29,10 +49,8 @@ export default async function SellerLayout({ children }: { children: React.React
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 상단 네비게이션 */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          {/* 로고 */}
           <div className="flex items-center gap-3">
             <Link href="/seller" className="flex items-center gap-2">
               <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-sm">
@@ -44,40 +62,25 @@ export default async function SellerLayout({ children }: { children: React.React
             </Link>
           </div>
 
-          {/* 네비 */}
           <nav className="flex items-center gap-1">
             {NAV_ITEMS.map(item => (
-              <SellerNavLink key={item.href} href={item.href} label={item.label} />
+              <Link key={item.href} href={item.href}
+                className="px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm text-gray-600
+                  hover:text-gray-900 hover:bg-gray-100 transition-colors whitespace-nowrap">
+                {item.label}
+              </Link>
             ))}
           </nav>
 
-          {/* 내 소호몰 링크 */}
           {store && (
-            <a
-              href={`/stores/${store.slug}`}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs text-indigo-600 hover:text-indigo-800 hidden sm:block"
-            >
+            <a href={`/stores/${store.slug}`} target="_blank" rel="noreferrer"
+              className="text-xs text-indigo-600 hover:text-indigo-800 hidden sm:block">
               내 소호몰 →
             </a>
           )}
         </div>
       </header>
-
       <main>{children}</main>
     </div>
-  )
-}
-
-// 클라이언트에서 active 처리하려면 'use client' 분리 필요 — 여기서는 서버에서 단순 렌더
-function SellerNavLink({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="px-2 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors whitespace-nowrap"
-    >
-      {label}
-    </Link>
   )
 }
