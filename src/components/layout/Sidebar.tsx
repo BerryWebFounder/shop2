@@ -1,8 +1,10 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
+import { useSidebar } from '@/components/layout/AdminProviders'
 
 const NAV = [
   {
@@ -79,6 +81,10 @@ interface SidebarProps {
 export function Sidebar({ storeName = '내 쇼핑몰' }: SidebarProps) {
   const pathname = usePathname()
   const router   = useRouter()
+  const { open, close } = useSidebar()
+
+  // 경로 변경 시 모바일 메뉴 닫기
+  useEffect(() => { close() }, [pathname])
 
   async function handleLogout() {
     const supabase = createClient()
@@ -87,8 +93,8 @@ export function Sidebar({ storeName = '내 쇼핑몰' }: SidebarProps) {
     router.refresh()
   }
 
-  return (
-    <aside className="hidden md:flex w-60 min-w-60 h-screen bg-bg-2 border-r border-border flex-col overflow-y-auto overflow-x-hidden">
+  const sidebarContent = (
+    <aside className="w-60 min-w-60 h-full bg-bg-2 border-r border-border flex flex-col overflow-y-auto overflow-x-hidden">
       {/* Logo */}
       <div className="px-4 py-4 border-b border-border flex-shrink-0">
         <div className="flex items-center gap-2.5">
@@ -143,5 +149,29 @@ export function Sidebar({ storeName = '내 쇼핑몰' }: SidebarProps) {
         </button>
       </div>
     </aside>
+  )
+
+  return (
+    <>
+      {/* 데스크탑: 항상 표시 */}
+      <div className="hidden md:flex h-screen">
+        {sidebarContent}
+      </div>
+
+      {/* 모바일: 오버레이 드로어 */}
+      {open && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          {/* 배경 dimmer */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={close}
+          />
+          {/* 드로어 */}
+          <div className="relative z-10 h-full">
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+    </>
   )
 }
