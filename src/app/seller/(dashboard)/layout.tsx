@@ -1,7 +1,3 @@
-// ================================================================
-// src/app/seller/layout.tsx
-// role 확인을 서버 컴포넌트에서 처리
-// ================================================================
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
@@ -14,7 +10,7 @@ const NAV_ITEMS = [
   { href: '/seller/store',    label: '소호몰 설정' },
 ]
 
-export default async function SellerLayout({ children }: { children: React.ReactNode }) {
+export default async function SellerDashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
 
   // 1. 로그인 확인
@@ -36,12 +32,17 @@ export default async function SellerLayout({ children }: { children: React.React
   const role         = profile?.role         ?? 'customer'
   const sellerStatus = profile?.seller_status ?? null
 
-  // /seller/apply 는 누구나 접근 가능
-  // 나머지는 seller 또는 admin만
-  // (apply/complete, apply/pending은 pathname이 /seller/apply/... 이므로 별도 처리)
+  // 3. 접근 제어
+  if (role !== 'seller' && role !== 'admin') {
+    if (sellerStatus === 'pending') redirect('/seller/apply/pending')
+    redirect('/seller/apply')
+  }
+  if (role === 'seller' && sellerStatus !== 'approved') {
+    redirect('/seller/apply/pending')
+  }
 
-  // 3. 소호몰 정보 조회
-  const { data: store } = await supabase
+  // 4. 소호몰 정보
+  const { data: store } = await svc
     .from('seller_stores')
     .select('store_name, slug')
     .eq('owner_id', user.id)
@@ -51,16 +52,12 @@ export default async function SellerLayout({ children }: { children: React.React
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/seller" className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-sm">
-                🏪
-              </div>
-              <span className="text-sm font-semibold text-gray-900 hidden sm:block">
-                {store?.store_name ?? '소호몰 관리'}
-              </span>
-            </Link>
-          </div>
+          <Link href="/seller" className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-sm">🏪</div>
+            <span className="text-sm font-semibold text-gray-900 hidden sm:block">
+              {store?.store_name ?? '소호몰 관리'}
+            </span>
+          </Link>
 
           <nav className="flex items-center gap-1">
             {NAV_ITEMS.map(item => (
