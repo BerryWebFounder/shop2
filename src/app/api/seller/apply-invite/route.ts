@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL)   missingVars.push('NEXT_PUBLIC_SUPABASE_URL')
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY)  missingVars.push('SUPABASE_SERVICE_ROLE_KEY')
     if (!process.env.RESEND_API_KEY)             missingVars.push('RESEND_API_KEY')
+    if (!process.env.RESEND_FROM_EMAIL)          missingVars.push('RESEND_FROM_EMAIL')
 
     if (missingVars.length > 0) {
       console.error('[apply-invite] 환경변수 누락:', missingVars)
@@ -86,7 +87,7 @@ export async function POST(req: NextRequest) {
 
     // ── 4. 메일 발송 ─────────────────────────────────────────────
     const resend   = new Resend(process.env.RESEND_API_KEY!)
-    const fromAddr = process.env.RESEND_FROM_EMAIL ?? 'onboarding@resend.dev'
+    const fromAddr = process.env.RESEND_FROM_EMAIL!
 
     const { data: mailData, error: mailErr } = await resend.emails.send({
       from:    fromAddr,
