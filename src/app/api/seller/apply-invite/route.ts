@@ -16,6 +16,20 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    // ── 0. 환경변수 사전 검증 ────────────────────────────────────
+    const missingVars: string[] = []
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL)   missingVars.push('NEXT_PUBLIC_SUPABASE_URL')
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY)  missingVars.push('SUPABASE_SERVICE_ROLE_KEY')
+    if (!process.env.RESEND_API_KEY)             missingVars.push('RESEND_API_KEY')
+
+    if (missingVars.length > 0) {
+      console.error('[apply-invite] 환경변수 누락:', missingVars)
+      return NextResponse.json(
+        { error: `서버 설정 오류: ${missingVars.join(', ')} 환경변수가 없습니다.` },
+        { status: 500 }
+      )
+    }
+
     const body   = await req.json()
     const parsed = schema.safeParse(body)
     if (!parsed.success) {
@@ -25,17 +39,17 @@ export async function POST(req: NextRequest) {
     const { email } = parsed.data
 
     // ── 1. 토큰 생성 ────────────────────────────────────────────
-    const token     = uuidv4().replace(/-/g, '') // 32자 랜덤 hex
-    const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000) // 48시간
+    const token     = uuidv4().replace(/-/g, '')
+    const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000)
 
-    // ── 2. DB 저장 (service role key) ──────────────────────────
+    // ── 2. DB 저장 ──────────────────────────────────────────────
     const svc = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
 
-    // 같은 이메일의 미사용 토큰이 있으면 무효화
+    // 기존 미사용 토큰 무효화
     await svc
       .from('seller_apply_tokens')
       .update({ expires_at: new Date().toISOString() })
@@ -46,7 +60,17 @@ export async function POST(req: NextRequest) {
       .from('seller_apply_tokens')
       .insert({ token, email, expires_at: expiresAt.toISOString() })
 
-    if (dbErr) throw dbErr
+    if (dbErr) {
+      console.error('[apply-invite] DB 오류:', dbErr)
+      // seller_apply_tokens 테이블이 없는 경우
+      if (dbErr.code === '42P01') {
+        return NextResponse.json(
+          { error: 'DB 테이블이 없습니다. apply-token-table.sql을 Supabase에서 실행해 주세요.' },
+          { status: 500 }
+        )
+      }
+      return NextResponse.json({ error: `DB 오류: ${dbErr.message}` }, { status: 500 })
+    }
 
     // ── 3. 신청 URL + QR 생성 ───────────────────────────────────
     const baseUrl  = process.env.NEXT_PUBLIC_SITE_URL
@@ -61,26 +85,34 @@ export async function POST(req: NextRequest) {
     })
 
     // ── 4. 메일 발송 ─────────────────────────────────────────────
-    const resend = new Resend(process.env.RESEND_API_KEY!)
+    const resend   = new Resend(process.env.RESEND_API_KEY!)
+    const fromAddr = process.env.RESEND_FROM_EMAIL ?? 'onboarding@resend.dev'
 
-    const { error: mailErr } = await resend.emails.send({
-      from:    process.env.RESEND_FROM_EMAIL ?? 'noreply@shop2.dev',
+    const { data: mailData, error: mailErr } = await resend.emails.send({
+      from:    fromAddr,
       to:      email,
       subject: '[소호몰] 개설 신청 링크가 도착했습니다 (48시간 유효)',
       html:    sellerInviteEmail({ applyUrl, qrDataUrl }),
     })
 
     if (mailErr) {
-      console.error('[apply-invite] Resend error:', mailErr)
-      // 메일 실패 시 토큰 삭제
+      console.error('[apply-invite] Resend 오류:', JSON.stringify(mailErr))
+      // 토큰 삭제 (메일 실패 시 재시도 가능하도록)
       await svc.from('seller_apply_tokens').delete().eq('token', token)
-      return NextResponse.json({ error: '메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 })
+      return NextResponse.json(
+        { error: `메일 발송 실패: ${(mailErr as { message?: string }).message ?? JSON.stringify(mailErr)}` },
+        { status: 500 }
+      )
     }
 
+    console.log('[apply-invite] 메일 발송 성공:', mailData?.id, '→', email)
     return NextResponse.json({ message: '신청 링크를 이메일로 발송했습니다.' })
 
   } catch (err) {
-    console.error('[apply-invite]', err)
-    return NextResponse.json({ error: '오류가 발생했습니다.' }, { status: 500 })
+    console.error('[apply-invite] 예외:', err)
+    return NextResponse.json(
+      { error: `오류가 발생했습니다: ${err instanceof Error ? err.message : String(err)}` },
+      { status: 500 }
+    )
   }
 }
