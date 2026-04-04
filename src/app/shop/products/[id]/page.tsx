@@ -56,24 +56,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 // ── 정적 경로 사전 생성 (ISR) ────────────────────────────────────
-export async function generateStaticParams() {
-  // 빌드 타임에는 cookies()를 사용할 수 없으므로 anon key로 직접 조회
-  const { createClient: sc } = await import('@supabase/supabase-js')
-  const supabase = sc(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
-  const { data } = await supabase
-    .from('products')
-    .select('id')
-    .in('status', ['sale', 'soldout'])
-    .order('created_at', { ascending: false })
-    .limit(100)
-  return (data ?? []).map(p => ({ id: p.id }))
-}
-
-// revalidate 설정: 1시간마다 재생성
-export const revalidate = 3600
+// 동적 렌더링 — 상품이 없을 때 빌드 오류 방지
+export const dynamic = 'force-dynamic'
 
 // ── 페이지 컴포넌트 ──────────────────────────────────────────────
 export default async function ProductDetailPage({ params }: PageProps) {

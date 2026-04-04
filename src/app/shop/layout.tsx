@@ -30,10 +30,12 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
     { data: { user } },
     { data: settingsData },
     { data: promosData },
+    { data: categoriesData },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from('admin_settings').select('store_name').single(),
     supabase.from('display_promo_bars').select('*').eq('is_active', true).order('sort_order'),
+    supabase.from('categories').select('id, name').eq('level', 1).order('sort_order'),
   ])
 
   const storeName = settingsData?.store_name ?? '쇼핑몰'
@@ -46,7 +48,7 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
           {/* 프로모 바 */}
           {promos.length > 0 && <RotatingPromoBar bars={promos} />}
 
-          <ShopHeader storeName={storeName} isLoggedIn={!!user} userEmail={user?.email} />
+          <ShopHeader storeName={storeName} isLoggedIn={!!user} userEmail={user?.email} categories={categoriesData ?? []} />
 
           <main className="flex-1">
             {children}

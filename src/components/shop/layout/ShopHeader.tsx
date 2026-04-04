@@ -6,12 +6,13 @@ import { useCart } from '@/hooks/useCart'
 import { createClient } from '@/lib/supabase/client'
 
 interface ShopHeaderProps {
-  storeName:  string
-  isLoggedIn: boolean
-  userEmail?: string
+  storeName:   string
+  isLoggedIn:  boolean
+  userEmail?:  string
+  categories?: { id: string; name: string }[]
 }
 
-export function ShopHeader({ storeName, isLoggedIn, userEmail }: ShopHeaderProps) {
+export function ShopHeader({ storeName, isLoggedIn, userEmail, categories = [] }: ShopHeaderProps) {
   const { count }   = useCart()
   const pathname    = usePathname()
   const router      = useRouter()
@@ -45,10 +46,10 @@ export function ShopHeader({ storeName, isLoggedIn, userEmail }: ShopHeaderProps
 
   const NAV = [
     { href: '/shop/products', label: '전체 상품' },
-    { href: '/shop/products?cat=상의', label: '상의' },
-    { href: '/shop/products?cat=하의', label: '하의' },
-    { href: '/shop/products?cat=신발', label: '신발' },
-    { href: '/shop/products?cat=아우터', label: '아우터' },
+    ...categories.map(c => ({
+      href:  `/shop/products?cat=${encodeURIComponent(c.name)}`,
+      label: c.name,
+    })),
   ]
 
   return (
