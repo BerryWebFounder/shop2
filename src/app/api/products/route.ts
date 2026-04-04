@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServiceClient as createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { productSchema } from '@/lib/validations'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const supabase = createServiceClient()
     const { searchParams } = new URL(request.url)
 
     const page   = parseInt(searchParams.get('page')   || '1')
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const supabase = createServiceClient()
     const body = await request.json()
     const parsed = productSchema.safeParse(body)
 
