@@ -119,13 +119,6 @@ export function ShopHeader({ storeName, isLoggedIn, userEmail, categories = [] }
             {isLoggedIn ? (
               <div className="hidden md:flex items-center gap-2">
                 <Link
-                  href="/seller/apply"
-                  className="text-xs px-3 py-1.5 rounded-full transition-colors"
-                  style={{ color: 'var(--shop-ink2)' }}
-                >
-                  소호몰 신청
-                </Link>
-                <Link
                   href="/shop/account"
                   className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all"
                   style={{ background: 'var(--shop-ink)', color: 'var(--shop-bg)' }}
@@ -226,10 +219,7 @@ export function ShopHeader({ storeName, isLoggedIn, userEmail, categories = [] }
               </Link>
             ))}
             <div className="pt-4 flex flex-col gap-2">
-              <Link href="/seller/apply" className="block py-2 text-sm font-medium border-b" style={{ color: 'var(--shop-accent)', borderColor: 'var(--shop-border)' }}>
-                🏪 소호몰 신청하기
-              </Link>
-              {isLoggedIn ? (
+                {isLoggedIn ? (
                 <>
                   <Link href="/shop/account" className="block py-2 text-sm font-medium" style={{ color: 'var(--shop-ink)' }}>마이페이지</Link>
                   <Link href="/shop/orders" className="block py-2 text-sm" style={{ color: 'var(--shop-ink2)' }}>주문내역</Link>
