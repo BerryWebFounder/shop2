@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/utils'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
   title:       '상품 목록',
@@ -30,7 +31,10 @@ export default async function ProductsPage({
 
   let query = supabase
     .from('products')
-    .select('id, name, price, sale_price, stock, status', { count: 'exact' })
+    .select(`
+      id, name, price, sale_price, stock, status,
+      images:product_images(public_url, sort_order, is_primary)
+    `, { count: 'exact' })
     .eq('status', 'sale')
     .range(from, to)
 
@@ -96,7 +100,13 @@ export default async function ProductsPage({
                   className="rounded-2xl mb-3 flex items-center justify-center aspect-square text-4xl relative overflow-hidden"
                   style={{ background: 'var(--shop-bg2)' }}
                 >
-                  📷
+                  {(() => {
+                    const imgs = (product as any).images ?? []
+                    const main = imgs.find((i: any) => i.is_primary) ?? imgs[0]
+                    return main?.public_url
+                      ? <Image src={main.public_url} alt={product.name} fill className="object-cover" sizes="(max-width:768px) 50vw, 25vw" />
+                      : <span>📷</span>
+                  })()}
                   {discountRate > 0 && (
                     <span
                       className="absolute top-2 left-2 text-[11px] font-bold px-2 py-0.5 rounded-full text-white"
