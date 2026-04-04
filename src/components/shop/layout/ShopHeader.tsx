@@ -126,11 +126,12 @@ export function ShopHeader({ storeName, isLoggedIn, userEmail, categories = [] }
                   소호몰 신청
                 </Link>
                 <Link
-                  href="/shop/orders"
-                  className="text-xs px-3 py-1.5 rounded-full transition-colors"
-                  style={{ color: 'var(--shop-ink2)', border: '1px solid var(--shop-border)' }}
+                  href="/shop/account"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all"
+                  style={{ background: 'var(--shop-ink)', color: 'var(--shop-bg)' }}
+                  title="마이페이지"
                 >
-                  주문내역
+                  {userEmail ? userEmail[0].toUpperCase() : 'M'}
                 </Link>
                 <button
                   onClick={handleLogout}
@@ -230,7 +231,9 @@ export function ShopHeader({ storeName, isLoggedIn, userEmail, categories = [] }
               </Link>
               {isLoggedIn ? (
                 <>
+                  <Link href="/shop/account" className="block py-2 text-sm font-medium" style={{ color: 'var(--shop-ink)' }}>마이페이지</Link>
                   <Link href="/shop/orders" className="block py-2 text-sm" style={{ color: 'var(--shop-ink2)' }}>주문내역</Link>
+                  <Link href="/shop/account/addresses" className="block py-2 text-sm" style={{ color: 'var(--shop-ink2)' }}>배송지 관리</Link>
                   <button onClick={handleLogout} className="block py-2 text-sm text-left" style={{ color: 'var(--shop-ink3)' }}>로그아웃</button>
                 </>
               ) : (
