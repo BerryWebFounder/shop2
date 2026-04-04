@@ -1,5 +1,6 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { Topbar } from '@/components/layout/Topbar'
 import { PageHeader, Card } from '@/components/ui/Card'
 import { Table, Thead, Th, Tbody, Tr, Td, EmptyRow } from '@/components/ui/Table'
@@ -28,6 +29,9 @@ export default function ProductsPage() {
   const [editId, setEditId]         = useState<string | null>(null)
   const [form, setForm]             = useState({ ...EMPTY_FORM })
   const [saving, setSaving]         = useState(false)
+  const [images, setImages]         = useState<{ file: File; preview: string }[]>([])
+  const [uploadingImg, setUploadingImg] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [formError, setFormError]   = useState('')
 
   // 중분류 선택지
@@ -59,6 +63,7 @@ export default function ProductsPage() {
     setEditId(null)
     setForm({ ...EMPTY_FORM })
     setFormError('')
+    setImages([])
     setModalOpen(true)
   }
 
@@ -73,6 +78,7 @@ export default function ProductsPage() {
       price: p.price, sale_price: p.sale_price ?? null, stock: p.stock, status: p.status,
     })
     setFormError('')
+    setImages([])
     setModalOpen(true)
   }
 
@@ -89,6 +95,31 @@ export default function ProductsPage() {
     })
     const json = await res.json()
     if (!res.ok) { setFormError(json.error ?? '저장 실패'); setSaving(false); return }
+
+    // 이미지 업로드
+    if (images.length > 0) {
+      const { id: productId } = json.data
+      setUploadingImg(true)
+      const supabase = createClient()
+      await Promise.all(images.map(async (img, idx) => {
+        const ext  = img.file.name.split('.').pop()
+        const path = `products/${productId}/${Date.now()}_${idx}.${ext}`
+        const { data: uploaded } = await supabase.storage
+          .from('product-images').upload(path, img.file, { upsert: true })
+        if (uploaded) {
+          const { data: pub } = supabase.storage.from('product-images').getPublicUrl(path)
+          await supabase.from('product_images').insert({
+            product_id: productId,
+            storage_path: path,
+            public_url: pub.publicUrl,
+            sort_order: idx,
+            is_main: idx === 0,
+          })
+        }
+      }))
+      setUploadingImg(false)
+    }
+
     setSaving(false)
     setModalOpen(false)
     fetchProducts()
@@ -213,6 +244,53 @@ export default function ProductsPage() {
             <Input value={form.summary} onChange={e => setForm(f => ({ ...f, summary: e.target.value }))} placeholder="목록에 표시될 짧은 설명 (선택)" />
           </FormField>
 
+          {/* 이미지 업로드 */}
+          <FormField label="상품 이미지">
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-2">
+                {images.map((img, i) => (
+                  <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border group">
+                    <img src={img.preview} alt="" className="w-full h-full object-cover" />
+                    {i === 0 && (
+                      <span className="absolute top-0 left-0 bg-accent text-white text-[9px] px-1 py-0.5">대표</span>
+                    )}
+                    <button
+                      onClick={() => {
+                        setImages(prev => {
+                          const next = prev.filter((_, j) => j !== i)
+                          return next
+                        })
+                      }}
+                      className="absolute top-0 right-0 bg-black/60 text-white text-xs w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >✕</button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-20 h-20 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-ink-3 hover:border-accent hover:text-accent transition-colors text-xs"
+                >
+                  <span className="text-xl">+</span>
+                  <span>추가</span>
+                </button>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={e => {
+                  const files = Array.from(e.target.files ?? [])
+                  const newImgs = files.map(f => ({ file: f, preview: URL.createObjectURL(f) }))
+                  setImages(prev => [...prev, ...newImgs])
+                  e.target.value = ''
+                }}
+              />
+              <p className="text-xs text-ink-3">첫 번째 이미지가 대표 이미지로 사용됩니다. 여러 장 선택 가능.</p>
+            </div>
+          </FormField>
+
           <FormField label="상품 상세 내용 (WYSIWYG)">
             <WysiwygEditor value={form.description} onChange={v => setForm(f => ({ ...f, description: v }))} />
           </FormField>
@@ -221,7 +299,7 @@ export default function ProductsPage() {
         </div>
         <ModalActions>
           <Button variant="secondary" onClick={() => setModalOpen(false)}>취소</Button>
-          <Button variant="primary" loading={saving} onClick={handleSave}>저장</Button>
+          <Button variant="primary" loading={saving || uploadingImg} onClick={handleSave}>{uploadingImg ? '이미지 업로드 중...' : '저장'}</Button>
         </ModalActions>
       </Modal>
     </>

@@ -47,7 +47,7 @@ export function ShopHeader({ storeName, isLoggedIn, userEmail, categories = [] }
   const NAV = [
     { href: '/shop/products', label: '전체 상품' },
     ...categories.map(c => ({
-      href:  `/shop/products?cat=${encodeURIComponent(c.name)}`,
+      href:  `/shop/products?cat=${c.id}`,
       label: c.name,
     })),
   ]

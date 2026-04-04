@@ -20,31 +20,15 @@ export default async function ProductsPage({
   const from      = (pageNum - 1) * pageSize
   const to        = from + pageSize - 1
 
-  // cat이 UUID 형식이면 ID로, 아니면 카테고리명으로 조회
-  let cat1Id: string | null = null
-  if (cat) {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cat)
-    if (isUuid) {
-      cat1Id = cat
-    } else {
-      const { data: catRow } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('name', cat)
-        .eq('level', 1)
-        .single()
-      cat1Id = catRow?.id ?? null
-    }
-  }
-
+  // cat은 항상 UUID (ShopHeader에서 c.id로 링크 생성)
   let query = supabase
     .from('products')
     .select('id, name, price, sale_price, stock, status', { count: 'exact' })
     .eq('status', 'sale')
     .range(from, to)
 
-  if (q)      query = query.ilike('name', '%' + q + '%')
-  if (cat1Id) query = query.eq('cat1_id', cat1Id)
+  if (q)   query = query.ilike('name', '%' + q + '%')
+  if (cat) query = query.eq('cat1_id', cat)
   if (sort === 'price_asc')  query = query.order('price', { ascending: true })
   else if (sort === 'price_desc') query = query.order('price', { ascending: false })
   else query = query.order('created_at', { ascending: false })
@@ -58,7 +42,7 @@ export default async function ProductsPage({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl sm:text-3xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
-          {q ? '"' + q + '" 검색 결과' : cat ? cat : '전체 상품'}
+          {q ? '"' + q + '" 검색 결과' : '전체 상품'}
         </h1>
         <span className="text-sm" style={{ color: 'var(--shop-ink3)' }}>
           총 {(count ?? 0).toLocaleString()}개
