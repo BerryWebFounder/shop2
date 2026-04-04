@@ -24,14 +24,14 @@ export async function GET(
 
     if (error) {
       console.error('[GET /api/products/:id] error:', error)
-      throw error
+      return NextResponse.json({ error: error.message, code: error.code, details: error.details }, { status: 500 })
     }
     if (!data) return NextResponse.json({ error: '상품을 찾을 수 없습니다' }, { status: 404 })
 
     return NextResponse.json({ data })
   } catch (err) {
     console.error('[GET /api/products/:id]', err)
-    return NextResponse.json({ error: '상품 조회에 실패했습니다' }, { status: 500 })
+    return NextResponse.json({ error: String(err) }, { status: 500 })
   }
 }
 
