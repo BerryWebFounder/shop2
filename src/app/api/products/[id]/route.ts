@@ -17,21 +17,18 @@ export async function GET(
         cat1:categories!cat1_id(id, name),
         cat2:categories!cat2_id(id, name),
         cat3:categories!cat3_id(id, name),
-        images:product_images(id, public_url, is_main, sort_order)
+        images:product_images(id, public_url, is_primary, sort_order)
       `)
       .eq('id', id)
       .single()
 
-    if (error) {
-      console.error('[GET /api/products/:id] error:', error)
-      return NextResponse.json({ error: error.message, code: error.code, details: error.details }, { status: 500 })
-    }
+    if (error) throw error
     if (!data) return NextResponse.json({ error: '상품을 찾을 수 없습니다' }, { status: 404 })
 
     return NextResponse.json({ data })
   } catch (err) {
     console.error('[GET /api/products/:id]', err)
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    return NextResponse.json({ error: '상품 조회에 실패했습니다' }, { status: 500 })
   }
 }
 

@@ -30,7 +30,7 @@ export default function ProductsPage() {
   const [form, setForm]             = useState({ ...EMPTY_FORM })
   const [saving, setSaving]         = useState(false)
   const [images, setImages]         = useState<{ file: File; preview: string }[]>([])  // 새로 추가할 이미지
-  const [savedImages, setSavedImages] = useState<{ id: string; url: string; is_main: boolean }[]>([])  // 기존 저장된 이미지
+  const [savedImages, setSavedImages] = useState<{ id: string; url: string; is_primary: boolean }[]>([])  // 기존 저장된 이미지
   const [uploadingImg, setUploadingImg] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [formError, setFormError]   = useState('')
@@ -88,8 +88,8 @@ export default function ProductsPage() {
     // API 응답에 포함된 images 사용
     const imgs = (p.images ?? [])
       .sort((a: {sort_order: number}, b: {sort_order: number}) => a.sort_order - b.sort_order)
-    setSavedImages(imgs.map((i: {id: string; public_url: string; is_main: boolean}) => ({
-      id: i.id, url: i.public_url, is_main: i.is_main,
+    setSavedImages(imgs.map((i: {id: string; public_url: string; is_primary: boolean}) => ({
+      id: i.id, url: i.public_url, is_primary: i.is_primary,
     })))
     setModalOpen(true)
   }
@@ -123,7 +123,7 @@ export default function ProductsPage() {
         fd.append('file',       img.file)
         fd.append('product_id', productId)
         fd.append('sort_order', String(idx))
-        fd.append('is_main',    String(idx === 0 && savedImages.length === 0))
+        fd.append('is_primary',    String(idx === 0 && savedImages.length === 0))
         const r = await fetch('/api/products/upload-image', { method: 'POST', body: fd })
         if (!r.ok) console.error('[이미지 업로드 실패]', await r.text())
       }))
@@ -262,7 +262,7 @@ export default function ProductsPage() {
                 {savedImages.map((img, i) => (
                   <div key={img.id} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border group">
                     <img src={img.url} alt="" className="w-full h-full object-cover" />
-                    {img.is_main && (
+                    {img.is_primary && (
                       <span className="absolute top-0 left-0 bg-accent text-white text-[9px] px-1 py-0.5">대표</span>
                     )}
                     <button

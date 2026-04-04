@@ -1,5 +1,5 @@
 // POST /api/products/upload-image
-// multipart/form-data: file, product_id, sort_order, is_main
+// multipart/form-data: file, product_id, sort_order, is_primary
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const file        = form.get('file') as File | null
     const product_id  = form.get('product_id') as string
     const sort_order  = parseInt(form.get('sort_order') as string ?? '0')
-    const is_main     = form.get('is_main') === 'true'
+    const is_primary     = form.get('is_primary') === 'true'
 
     if (!file || !product_id) {
       return NextResponse.json({ error: '파일 또는 product_id 누락' }, { status: 400 })
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       storage_path: path,
       public_url:   pub.publicUrl,
       sort_order,
-      is_main,
+      is_primary,
     }).select().single()
 
     if (dbErr) throw dbErr
