@@ -72,6 +72,10 @@ export default function ProductsPage() {
   async function openEdit(id: string) {
     const res = await fetch(`/api/products/${id}`)
     const json = await res.json()
+    if (!res.ok || !json.data) {
+      alert('상품 정보를 불러오지 못했습니다: ' + (json.error ?? '알 수 없는 오류'))
+      return
+    }
     const p = json.data
     setEditId(id)
     setForm({
