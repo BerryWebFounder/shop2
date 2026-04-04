@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { eventSchema } from '@/lib/validations'
 
 export async function PUT(
@@ -8,7 +8,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const body = await request.json()
     const parsed = eventSchema.safeParse(body)
 
@@ -37,7 +37,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const { error } = await supabase.from('events').delete().eq('id', id)
     if (error) throw error
     return NextResponse.json({ message: '이벤트가 삭제되었습니다' })

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 
 // ── 연관 상품 조회 ─────────────────────────────────────────────────
 export async function GET(
@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const { data } = await supabase
     .from('product_relations')
@@ -25,7 +25,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const { relatedIds } = await request.json() as { relatedIds: string[] }
 
     if (relatedIds.includes(id)) {

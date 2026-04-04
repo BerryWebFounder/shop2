@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 
 const BUCKET       = 'product-images'
 const MAX_SIZE_MB  = 5
@@ -7,7 +7,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
 
     // 인증 확인
     const { data: { user } } = await supabase.auth.getUser()
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 // ── 이미지 삭제 ───────────────────────────────────────────────────
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { productSchema } from '@/lib/validations'
 
 export async function GET(
@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
 
     const { data, error } = await supabase
       .from('products')
@@ -38,7 +38,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const body = await request.json()
     const parsed = productSchema.safeParse(body)
 
@@ -67,7 +67,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
 
     // 전시 중인 상품이면 전시에서도 제거
     await supabase.from('display_items').delete().eq('product_id', id)

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { settingsSchema } from '@/lib/validations'
 
 export async function GET() {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const { data, error } = await supabase
       .from('admin_settings')
       .select('id, store_name, biz_no, address, phone, email, dormant_days, data_keep_years, updated_at')
@@ -20,7 +20,7 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const body = await request.json()
     const parsed = settingsSchema.safeParse(body)
 

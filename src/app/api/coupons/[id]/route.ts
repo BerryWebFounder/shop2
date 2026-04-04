@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const updateSchema = z.object({
@@ -17,7 +17,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const body   = await request.json()
     const parsed = updateSchema.safeParse(body)
 
@@ -49,7 +49,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
 
     // 사용 내역이 있으면 비활성화만 (물리 삭제 대신)
     const { count } = await supabase

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { categorySchema } from '@/lib/validations'
 
 export async function GET() {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
 
     const { data, error } = await supabase
       .from('categories')
@@ -33,7 +33,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const body = await request.json()
     const parsed = categorySchema.safeParse(body)
 

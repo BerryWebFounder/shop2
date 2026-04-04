@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const reviewSchema = z.object({
@@ -15,7 +15,7 @@ const reviewSchema = z.object({
 // ── 리뷰 목록 조회 ────────────────────────────────────────────────
 export async function GET(request: NextRequest) {
   try {
-    const supabase      = await createClient()
+    const supabase      = createClient()
     const { searchParams } = new URL(request.url)
     const productId = searchParams.get('product_id')
     const status    = searchParams.get('status') || 'approved'
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
 // ── 리뷰 작성 ────────────────────────────────────────────────────
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const body     = await request.json()
     const parsed   = reviewSchema.safeParse(body)
 

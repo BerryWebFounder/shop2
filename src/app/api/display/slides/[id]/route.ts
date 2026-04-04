@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const body = await request.json()
     const { data, error } = await supabase.from('display_slides').update(body).eq('id', id).select().single()
     if (error) throw error
@@ -17,7 +17,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     await supabase.from('display_slides').delete().eq('id', id)
     return NextResponse.json({ message: '삭제되었습니다' })
   } catch (err) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const gradeSchema = z.object({
@@ -14,7 +14,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const body   = await request.json()
     const parsed = gradeSchema.safeParse(body)
 
@@ -66,7 +66,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
 
     const { data, error } = await supabase.rpc('update_member_grade', { p_member_id: id })
     if (error) throw error

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 
 export async function PATCH(
   request: NextRequest,
@@ -7,7 +7,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const body = await request.json()
 
     const { data, error } = await supabase
@@ -31,7 +31,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const { error } = await supabase.from('display_items').delete().eq('id', id)
     if (error) throw error
     return NextResponse.json({ message: '전시가 삭제되었습니다' })

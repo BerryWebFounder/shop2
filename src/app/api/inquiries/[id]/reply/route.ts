@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const replySchema = z.object({
@@ -15,7 +15,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const body   = await request.json()
     const parsed = replySchema.safeParse(body)
 

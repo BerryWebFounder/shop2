@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const imagesSchema = z.object({
@@ -20,7 +20,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
 
     const { data, error } = await supabase
       .from('product_images')
@@ -46,7 +46,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const body   = await request.json()
     const parsed = imagesSchema.safeParse(body)
 

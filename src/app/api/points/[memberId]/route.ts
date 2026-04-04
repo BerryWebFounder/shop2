@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 // ── 포인트 내역 + 잔액 조회 ───────────────────────────────────────
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { memberId } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const { searchParams } = new URL(request.url)
     const page  = parseInt(searchParams.get('page') || '1')
     const limit = 20
@@ -54,7 +54,7 @@ export async function POST(
 ) {
   try {
     const { memberId } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const body   = await request.json()
     const parsed = adminGrantSchema.safeParse(body)
 

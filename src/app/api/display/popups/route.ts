@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const popupSchema = z.object({
@@ -29,7 +29,7 @@ function isLive(row: { is_active: boolean; starts_at: string | null; ends_at: st
 }
 
 export async function GET(request: NextRequest) {
-  const supabase = await createClient()
+  const supabase = createClient()
   const { searchParams } = new URL(request.url)
   const isAdmin  = searchParams.get('admin') === 'true'
   const liveOnly = searchParams.get('live')  === 'true'
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient()
+  const supabase = createClient()
   const parsed = popupSchema.safeParse(await request.json())
   if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
   const { data, error } = await supabase.from('display_popups').insert(parsed.data).select().single()
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const supabase = await createClient()
+  const supabase = createClient()
   const { id, ...body } = await request.json()
   const { data, error } = await supabase.from('display_popups').update(body).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -56,7 +56,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const supabase = await createClient()
+  const supabase = createClient()
   const { id } = await request.json()
   await supabase.from('display_popups').delete().eq('id', id)
   return NextResponse.json({ message: '삭제되었습니다' })

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const updateSchema = z.object({
@@ -15,7 +15,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const body   = await request.json()
     const parsed = updateSchema.safeParse(body)
 
@@ -40,7 +40,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const { error } = await supabase.from('faqs').delete().eq('id', id)
     if (error) throw error
     return NextResponse.json({ message: 'FAQ가 삭제되었습니다' })

@@ -114,27 +114,14 @@ export default function ProductsPage() {
       const productId = editId ?? json.data?.id
       if (!productId) { setUploadingImg(false); setSaving(false); setModalOpen(false); fetchProducts(); return }
       setUploadingImg(true)
-      const supabase = createClient()
       await Promise.all(images.map(async (img, idx) => {
-        const ext  = img.file.name.split('.').pop()
-        const path = `products/${productId}/${Date.now()}_${idx}.${ext}`
-        const { data: uploaded, error: uploadErr } = await supabase.storage
-          .from('product-images').upload(path, img.file, { upsert: true })
-        if (uploadErr) {
-          console.error('[이미지 업로드 실패]', uploadErr)
-          return
-        }
-        if (uploaded) {
-          const { data: pub } = supabase.storage.from('product-images').getPublicUrl(path)
-          const { error: insertErr } = await supabase.from('product_images').insert({
-            product_id: productId,
-            storage_path: path,
-            public_url: pub.publicUrl,
-            sort_order: idx,
-            is_main: idx === 0,
-          })
-          if (insertErr) console.error('[product_images 저장 실패]', insertErr)
-        }
+        const fd = new FormData()
+        fd.append('file',       img.file)
+        fd.append('product_id', productId)
+        fd.append('sort_order', String(idx))
+        fd.append('is_main',    String(idx === 0 && savedImages.length === 0))
+        const r = await fetch('/api/products/upload-image', { method: 'POST', body: fd })
+        if (!r.ok) console.error('[이미지 업로드 실패]', await r.text())
       }))
       setUploadingImg(false)
     }

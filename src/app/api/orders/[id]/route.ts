@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import { ORDER_STATUS_TRANSITIONS, CARRIERS, type OrderStatus } from '@/types/order'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const [{ data: order }, { data: items }, { data: history }, { data: shipment }] = await Promise.all([
       supabase.from('order_detail_view').select('*').eq('id', id).single(),
       supabase.from('order_items').select('*').eq('order_id', id).order('created_at'),
@@ -35,7 +35,7 @@ const shipmentSchema = z.object({
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const body = await request.json()
 
     if ('status' in body) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const inquirySchema = z.object({
@@ -15,7 +15,7 @@ const inquirySchema = z.object({
 // ── 문의 목록 ─────────────────────────────────────────────────────
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const { searchParams } = new URL(request.url)
     const isAdmin    = searchParams.get('admin')    === 'true'
     const memberId   = searchParams.get('member_id') || ''
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 // ── 문의 등록 ─────────────────────────────────────────────────────
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const body     = await request.json()
     const parsed   = inquirySchema.safeParse(body)
 

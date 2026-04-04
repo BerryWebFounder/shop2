@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 
 // ── 상품 철하/고정 토글 ───────────────────────────────────────────
 export async function PATCH(
@@ -8,7 +8,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
     const { is_pinned } = await request.json() as { is_pinned: boolean }
 
     const { data, error } = await supabase

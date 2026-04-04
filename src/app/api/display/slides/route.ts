@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const slideSchema = z.object({
@@ -31,7 +31,7 @@ function isLive(row: { is_active: boolean; starts_at: string | null; ends_at: st
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const { searchParams } = new URL(request.url)
     const isAdmin  = searchParams.get('admin') === 'true'
     const liveOnly = searchParams.get('live')  === 'true'
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const body   = await request.json()
     const parsed = slideSchema.safeParse(body)
     if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })

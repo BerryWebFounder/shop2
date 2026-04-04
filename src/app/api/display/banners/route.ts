@@ -1,6 +1,6 @@
 // src/app/api/display/banners/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 function isLive(row: { is_active: boolean; starts_at: string | null; ends_at: string | null }) {
@@ -31,7 +31,7 @@ const bannerSchema = z.object({
 })
 
 export async function GET(request: NextRequest) {
-  const supabase = await createClient()
+  const supabase = createClient()
   const { searchParams } = new URL(request.url)
   const zone     = searchParams.get('zone') || 'main'
   const isAdmin  = searchParams.get('admin') === 'true'
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient()
+  const supabase = createClient()
   const body   = await request.json()
   const parsed = bannerSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const supabase = await createClient()
+  const supabase = createClient()
   const { id, ...body } = await request.json()
   const { data, error } = await supabase.from('display_banners').update(body).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -61,7 +61,7 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const supabase = await createClient()
+  const supabase = createClient()
   const { id } = await request.json()
   await supabase.from('display_banners').delete().eq('id', id)
   return NextResponse.json({ message: '삭제되었습니다' })

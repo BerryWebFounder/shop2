@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient as createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 // ── CSV 다운로드 (템플릿) ─────────────────────────────────────────
@@ -40,7 +40,7 @@ const productRowSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     const body     = await request.json()
 
     if (!Array.isArray(body.rows) || body.rows.length === 0) {
