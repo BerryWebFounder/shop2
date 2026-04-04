@@ -16,7 +16,8 @@ export async function GET(
         *,
         cat1:categories!cat1_id(*),
         cat2:categories!cat2_id(*),
-        cat3:categories!cat3_id(*)
+        cat3:categories!cat3_id(*),
+        images:product_images(id, public_url, is_main, sort_order)
       `)
       .eq('id', id)
       .single()

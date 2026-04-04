@@ -81,22 +81,17 @@ export default function ProductsPage() {
     })
     setFormError('')
     setImages([])
-    // 기존 저장된 이미지 조회
-    const { createClient: sc } = await import('@supabase/supabase-js')
-    const supa = sc(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
-    const { data: existingImgs } = await supa
-      .from('product_images')
-      .select('id, public_url, is_main')
-      .eq('product_id', id)
-      .order('sort_order')
-    setSavedImages((existingImgs ?? []).map(i => ({ id: i.id, url: i.public_url, is_main: i.is_main })))
+    // API 응답에 포함된 images 사용
+    const imgs = (p.images ?? [])
+      .sort((a: {sort_order: number}, b: {sort_order: number}) => a.sort_order - b.sort_order)
+    setSavedImages(imgs.map((i: {id: string; public_url: string; is_main: boolean}) => ({
+      id: i.id, url: i.public_url, is_main: i.is_main,
+    })))
     setModalOpen(true)
   }
 
   async function handleDeleteSavedImage(imgId: string) {
-    const { createClient: sc } = await import('@supabase/supabase-js')
-    const supa = sc(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
-    await supa.from('product_images').delete().eq('id', imgId)
+    await fetch(`/api/product-images/${imgId}`, { method: 'DELETE' })
     setSavedImages(prev => prev.filter(i => i.id !== imgId))
   }
 
