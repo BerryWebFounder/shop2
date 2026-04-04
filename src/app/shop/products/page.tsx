@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/utils'
 
 export const metadata: Metadata = {
@@ -14,13 +14,20 @@ export default async function ProductsPage({
   searchParams: Promise<{ q?: string; cat?: string; sort?: string; page?: string }>
 }) {
   const { q, cat, sort = 'newest', page = '1' } = await searchParams
-  const supabase  = await createClient()
+  const supabase  = createServiceClient()
   const pageNum   = Math.max(1, parseInt(page))
   const pageSize  = 16
   const from      = (pageNum - 1) * pageSize
   const to        = from + pageSize - 1
 
   // cat은 항상 UUID (ShopHeader에서 c.id로 링크 생성)
+  let catName = ''
+  if (cat) {
+    const { data: catRow } = await supabase
+      .from('categories').select('name').eq('id', cat).single()
+    catName = catRow?.name ?? ''
+  }
+
   let query = supabase
     .from('products')
     .select('id, name, price, sale_price, stock, status', { count: 'exact' })
@@ -42,7 +49,7 @@ export default async function ProductsPage({
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl sm:text-3xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
-          {q ? '"' + q + '" 검색 결과' : '전체 상품'}
+          {q ? '"' + q + '" 검색 결과' : catName || '전체 상품'}
         </h1>
         <span className="text-sm" style={{ color: 'var(--shop-ink3)' }}>
           총 {(count ?? 0).toLocaleString()}개
