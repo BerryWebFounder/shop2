@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { useCart } from '@/hooks/useCart'
 import { createClient } from '@/lib/supabase/client'
@@ -11,10 +11,13 @@ import { TossPayButton }        from '@/components/shop/payment/TossPayButton'
 import type { OrderDiscountForm } from '@/types/coupon'
 import { v4 as uuidv4 } from 'uuid'  // npm install uuid @types/uuid
 
-export default function CheckoutPage() {
+function CheckoutInner() {
+  const searchParams = useSearchParams()
+  const buyNowId  = searchParams.get('buyNow')
+  const buyNowQty = parseInt(searchParams.get('qty') ?? '1')
   const router = useRouter()
   const { items, total } = useCart()
-  const shippingFee = total >= 50000 || total === 0 ? 0 : 3000
+  // shippingFee는 아래 checkoutTotal 계산 후 선언
 
   const [memberId,    setMemberId]    = useState<string | null>(null)
   const [memberEmail, setMemberEmail] = useState<string | null>(null)
@@ -27,7 +30,7 @@ export default function CheckoutPage() {
   const [formError,    setFormError]    = useState('')
   const [step, setStep] = useState<'info' | 'pay'>('info')
 
-  const finalTotal = Math.max(0, total + shippingFee - discount.coupon_discount - discount.point_used)
+  // finalTotal은 아래 buyNowItem/checkoutTotal/shippingFee 선언 후 계산
   const handleDiscountChange = useCallback((d: OrderDiscountForm) => setDiscount(d), [])
 
   const [isGuest, setIsGuest] = useState(false)
@@ -47,9 +50,36 @@ export default function CheckoutPage() {
     })
   }, [])
 
+  const [buyNowItem, setBuyNowItem] = useState<import('@/lib/shop/cart').CartItem | null>(null)
+  const checkoutItems = buyNowItem ? [buyNowItem] : items
+  const checkoutTotal = checkoutItems.reduce((s, i) => s + (i.sale_price ?? i.price) * i.quantity, 0)
+  const shippingFee   = checkoutTotal >= 50000 || checkoutTotal === 0 ? 0 : 3000
+  const finalTotal    = Math.max(0, checkoutTotal + shippingFee - discount.coupon_discount - discount.point_used)
+
   useEffect(() => {
-    if (items.length === 0 && step !== 'pay') router.replace('/shop/cart')
-  }, [items, step, router])
+    if (!buyNowId) return
+    const supabase = createClient()
+    supabase.from('products')
+      .select('id, name, price, sale_price, stock, status')
+      .eq('id', buyNowId).single()
+      .then(({ data }) => {
+        if (data) setBuyNowItem({
+            id:        data.id,
+            name:      data.name,
+            price:     data.price,
+            sale_price: data.sale_price ?? null,
+            quantity:  buyNowQty,
+            serial_no: '',
+            image_url: null,
+            stock:     data.stock ?? 99,
+            cat1_name: null,
+          })
+      })
+  }, [buyNowId, buyNowQty])
+
+  useEffect(() => {
+    if (!buyNowId && items.length === 0 && step !== 'pay') router.replace('/shop/cart')
+  }, [buyNowId, items, step, router])
 
   // 주문 생성 후 결제 단계로 이동
   async function handleProceedToPayment() {
@@ -222,5 +252,13 @@ export default function CheckoutPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><span className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" /></div>}>
+      <CheckoutInner />
+    </Suspense>
   )
 }

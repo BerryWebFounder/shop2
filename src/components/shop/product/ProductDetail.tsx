@@ -178,6 +178,16 @@ export function ProductDetail({ product, images }: { product: Product; images: P
             >
               {isSoldOut ? '품절' : added ? '✓ 장바구니에 추가됨' : '장바구니 담기'}
             </button>
+            {/* 바로 주문 */}
+            {!isSoldOut && (
+              <Link
+                href={`/shop/checkout?buyNow=${product.id}&qty=${qty}`}
+                className="w-full py-4 rounded-2xl text-sm font-semibold text-center transition-all active:scale-[0.98] block"
+                style={{ background: 'var(--shop-accent)', color: 'white' }}
+              >
+                바로 주문하기
+              </Link>
+            )}
             {inCart && !added && (
               <Link
                 href="/shop/cart"
