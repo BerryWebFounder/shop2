@@ -49,13 +49,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 })
     }
 
-    // serial_no 자동 생성
-    const { count } = await supabase.from('products').select('*', { count: 'exact', head: true })
-    const serial_no = `P${String((count ?? 0) + 1).padStart(4, '0')}`
-
+    // serial_no는 DB 트리거(trg_set_serial_no)가 자동 생성
     const { data, error } = await supabase
       .from('products')
-      .insert({ ...parsed.data, serial_no })
+      .insert(parsed.data)
       .select()
       .single()
 
