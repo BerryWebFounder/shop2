@@ -29,7 +29,8 @@ export default function ProductsPage() {
   const [editId, setEditId]         = useState<string | null>(null)
   const [form, setForm]             = useState({ ...EMPTY_FORM })
   const [saving, setSaving]         = useState(false)
-  const [images, setImages]         = useState<{ file: File; preview: string }[]>([])
+  const [images, setImages]         = useState<{ file: File; preview: string }[]>([])  // 새로 추가할 이미지
+  const [savedImages, setSavedImages] = useState<{ id: string; url: string; is_main: boolean }[]>([])  // 기존 저장된 이미지
   const [uploadingImg, setUploadingImg] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [formError, setFormError]   = useState('')
@@ -64,6 +65,7 @@ export default function ProductsPage() {
     setForm({ ...EMPTY_FORM })
     setFormError('')
     setImages([])
+    setSavedImages([])
     setModalOpen(true)
   }
 
@@ -79,7 +81,23 @@ export default function ProductsPage() {
     })
     setFormError('')
     setImages([])
+    // 기존 저장된 이미지 조회
+    const { createClient: sc } = await import('@supabase/supabase-js')
+    const supa = sc(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+    const { data: existingImgs } = await supa
+      .from('product_images')
+      .select('id, public_url, is_main')
+      .eq('product_id', id)
+      .order('sort_order')
+    setSavedImages((existingImgs ?? []).map(i => ({ id: i.id, url: i.public_url, is_main: i.is_main })))
     setModalOpen(true)
+  }
+
+  async function handleDeleteSavedImage(imgId: string) {
+    const { createClient: sc } = await import('@supabase/supabase-js')
+    const supa = sc(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+    await supa.from('product_images').delete().eq('id', imgId)
+    setSavedImages(prev => prev.filter(i => i.id !== imgId))
   }
 
   async function handleSave() {
@@ -254,18 +272,29 @@ export default function ProductsPage() {
           <FormField label="상품 이미지">
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2">
+                {/* 기존 저장된 이미지 */}
+                {savedImages.map((img, i) => (
+                  <div key={img.id} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border group">
+                    <img src={img.url} alt="" className="w-full h-full object-cover" />
+                    {img.is_main && (
+                      <span className="absolute top-0 left-0 bg-accent text-white text-[9px] px-1 py-0.5">대표</span>
+                    )}
+                    <button
+                      onClick={() => handleDeleteSavedImage(img.id)}
+                      className="absolute top-0 right-0 bg-black/60 text-white text-xs w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >✕</button>
+                  </div>
+                ))}
+                {/* 새로 추가할 이미지 */}
                 {images.map((img, i) => (
-                  <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border group">
+                  <div key={i} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border border-dashed group">
                     <img src={img.preview} alt="" className="w-full h-full object-cover" />
-                    {i === 0 && (
+                    {savedImages.length === 0 && i === 0 && (
                       <span className="absolute top-0 left-0 bg-accent text-white text-[9px] px-1 py-0.5">대표</span>
                     )}
                     <button
                       onClick={() => {
-                        setImages(prev => {
-                          const next = prev.filter((_, j) => j !== i)
-                          return next
-                        })
+                        setImages(prev => prev.filter((_, j) => j !== i))
                       }}
                       className="absolute top-0 right-0 bg-black/60 text-white text-xs w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >✕</button>
