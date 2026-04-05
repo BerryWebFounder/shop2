@@ -17,7 +17,7 @@ export function sellerInviteEmail({
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>소호몰 개설 신청 안내</title>
+  <title>상점 개설 신청 안내</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:'Apple SD Gothic Neo',sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
@@ -29,7 +29,7 @@ export function sellerInviteEmail({
         <tr>
           <td style="background:#4f46e5;padding:32px;text-align:center;">
             <div style="font-size:28px;margin-bottom:8px;">🏪</div>
-            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">소호몰 개설 신청</h1>
+            <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;">상점 개설 신청</h1>
             <p style="margin:8px 0 0;color:rgba(255,255,255,0.8);font-size:14px;">
               아래 버튼 또는 QR코드로 신청서를 작성해 주세요
             </p>
@@ -40,7 +40,7 @@ export function sellerInviteEmail({
         <tr>
           <td style="padding:40px 32px;">
             <p style="margin:0 0 8px;color:#374151;font-size:15px;line-height:1.6;">
-              안녕하세요! 소호몰 개설 신청 링크가 발송되었습니다.
+              안녕하세요! 상점 개설 신청 링크가 발송되었습니다.
             </p>
             <p style="margin:0 0 32px;color:#6b7280;font-size:14px;line-height:1.6;">
               이 링크는 <strong style="color:#4f46e5;">${expiresHours}시간</strong> 동안만 유효하며,
@@ -82,7 +82,7 @@ export function sellerInviteEmail({
         <tr>
           <td style="background:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;">
             <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;line-height:1.6;">
-              본 메일은 소호몰 개설 신청 요청에 의해 발송되었습니다.<br />
+              본 메일은 상점 개설 신청 요청에 의해 발송되었습니다.<br />
               요청하지 않으셨다면 이 메일을 무시해 주세요.
             </p>
           </td>

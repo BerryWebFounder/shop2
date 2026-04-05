@@ -1,6 +1,6 @@
 // ================================================================
 // src/app/seller/page.tsx
-// 판매자 대시보드 홈 — 소호몰 운영 현황 요약
+// 판매자 대시보드 홈 — 상점 운영 현황 요약
 // ================================================================
 'use client'
 import { useEffect, useState } from 'react'
@@ -87,9 +87,9 @@ export default function SellerDashboardPage() {
       <div className="flex items-center justify-center h-screen px-4">
         <div className="text-center">
           <p className="text-3xl mb-3">🏪</p>
-          <p className="text-gray-600 text-sm">소호몰 정보를 찾을 수 없습니다.</p>
+          <p className="text-gray-600 text-sm">상점 정보를 찾을 수 없습니다.</p>
           <Link href="/seller/apply" className="mt-4 inline-block text-indigo-600 text-sm hover:underline">
-            소호몰 신청하기 →
+            상점 신청하기 →
           </Link>
         </div>
       </div>
@@ -108,8 +108,8 @@ export default function SellerDashboardPage() {
   const quickLinks = [
     { href: '/seller/products', icon: '📦', label: '상품 등록' },
     { href: '/seller/orders',   icon: '🚚', label: '주문 관리' },
-    { href: '/seller/store',    icon: '⚙️', label: '소호몰 설정' },
-    { href: `/stores/${store.slug}`, icon: '🏪', label: '내 소호몰 보기', external: true },
+    { href: '/seller/store',    icon: '⚙️', label: '상점 설정' },
+    { href: `/stores/${store.slug}`, icon: '🏪', label: '내 상점 보기', external: true },
   ]
 
   return (

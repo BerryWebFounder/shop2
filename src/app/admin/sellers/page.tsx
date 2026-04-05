@@ -56,7 +56,7 @@ export default function AdminSellersPage() {
     if (error || !data?.success) {
       alert('오류: ' + (error?.message ?? data?.error))
     } else {
-      alert(`승인 완료! 소호몰 URL: /stores/${data.slug}`)
+      alert(`승인 완료! 상점 URL: /stores/${data.slug}`)
       setSelected(null)
       fetchApplications()
     }
@@ -203,8 +203,8 @@ function ApplicationDetail({ app, adminNote, onNoteChange, onApprove, onReject, 
         <InfoGrid items={bizInfo} />
       </DetailSection>
 
-      {/* 소호몰 정보 */}
-      <DetailSection title="소호몰 정보">
+      {/* 상점 정보 */}
+      <DetailSection title="상점 정보">
         <InfoGrid items={[
           { label: '상점명',   value: app.store_name },
           { label: '예정 URL', value: `/stores/${app.store_slug}` },
@@ -245,7 +245,7 @@ function ApplicationDetail({ app, adminNote, onNoteChange, onApprove, onReject, 
               <button onClick={onApprove} disabled={processing}
                 className="flex-[2] px-8 py-3 bg-indigo-600 text-white rounded-xl font-medium
                   hover:bg-indigo-700 disabled:opacity-60 transition-colors">
-                {processing ? '처리 중...' : '✓ 승인 및 소호몰 개설'}
+                {processing ? '처리 중...' : '✓ 승인 및 상점 개설'}
               </button>
             </div>
           </div>

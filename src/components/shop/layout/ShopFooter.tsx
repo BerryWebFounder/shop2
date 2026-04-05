@@ -40,7 +40,7 @@ export function ShopFooter({ storeName }: { storeName: string }) {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/seller/apply" className="transition-colors hover:text-white" style={{ color: 'var(--shop-bg3)' }}>
-                  소호몰 신청
+                  상점 신청
                 </Link>
               </li>
               <li>

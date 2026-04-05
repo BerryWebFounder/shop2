@@ -1,7 +1,7 @@
 'use client'
 // ================================================================
 // src/app/seller/store/page.tsx
-// 판매자 소호몰 설정 페이지
+// 판매자 상점 설정 페이지
 // ================================================================
 
 import { useState, useEffect, useRef } from 'react'
@@ -80,7 +80,7 @@ export default function SellerStorePage() {
     setForm(prev => ({ ...prev, [key]: value }))
 
   if (loading) return <LoadingScreen text="불러오는 중..." />
-  if (!store)  return <LoadingScreen text="소호몰 정보를 찾을 수 없습니다." />
+  if (!store)  return <LoadingScreen text="상점 정보를 찾을 수 없습니다." />
 
   const logoUrl   = form.logo_url   ?? store.logo_url
   const bannerUrl = form.banner_url ?? store.banner_url
@@ -91,7 +91,7 @@ export default function SellerStorePage() {
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">소호몰 설정</h1>
+          <h1 className="text-2xl font-bold text-gray-900">상점 설정</h1>
           <p className="text-gray-500 text-sm mt-1 flex items-center gap-2">
             <span className="inline-flex items-center gap-1 text-green-600 bg-green-50 px-2 py-0.5 rounded-full text-xs font-medium">
               <span className="w-1.5 h-1.5 bg-green-500 rounded-full inline-block" />
@@ -112,7 +112,7 @@ export default function SellerStorePage() {
 
       {/* 배너 */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">소호몰 배너</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">상점 배너</label>
         <div onClick={() => bannerRef.current?.click()}
           className="relative h-40 bg-gray-100 rounded-xl overflow-hidden cursor-pointer group
             hover:opacity-90 transition-opacity border-2 border-dashed border-gray-200">
@@ -156,7 +156,7 @@ export default function SellerStorePage() {
 
           <div className="flex-1 space-y-4">
             <FormField label="상점명 *" value={form.store_name ?? ''}
-              onChange={v => patchForm('store_name', v)} placeholder="나의 소호몰" />
+              onChange={v => patchForm('store_name', v)} placeholder="나의 상점" />
             <FormField label="한 줄 소개" value={form.tagline ?? ''}
               onChange={v => patchForm('tagline', v)} placeholder="특별한 물건들을 파는 곳" />
           </div>
@@ -168,7 +168,7 @@ export default function SellerStorePage() {
         <textarea
           value={form.intro ?? ''} rows={5}
           onChange={e => patchForm('intro', e.target.value)}
-          placeholder="소호몰을 소개하는 문구를 작성해 주세요. 고객들이 첫 화면에서 보게 됩니다."
+          placeholder="상점을 소개하는 문구를 작성해 주세요. 고객들이 첫 화면에서 보게 됩니다."
           className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg resize-none
             focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
         />

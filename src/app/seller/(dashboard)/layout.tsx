@@ -7,7 +7,7 @@ const NAV_ITEMS = [
   { href: '/seller',          label: '대시보드' },
   { href: '/seller/products', label: '상품 관리' },
   { href: '/seller/orders',   label: '주문 / 정산' },
-  { href: '/seller/store',    label: '소호몰 설정' },
+  { href: '/seller/store',    label: '상점 설정' },
 ]
 
 export default async function SellerDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -41,7 +41,7 @@ export default async function SellerDashboardLayout({ children }: { children: Re
     redirect('/seller/apply/pending')
   }
 
-  // 4. 소호몰 정보
+  // 4. 상점 정보
   const { data: store } = await svc
     .from('seller_stores')
     .select('store_name, slug')
@@ -55,7 +55,7 @@ export default async function SellerDashboardLayout({ children }: { children: Re
           <Link href="/seller" className="flex items-center gap-2">
             <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-sm">🏪</div>
             <span className="text-sm font-semibold text-gray-900 hidden sm:block">
-              {store?.store_name ?? '소호몰 관리'}
+              {store?.store_name ?? '상점 관리'}
             </span>
           </Link>
 
@@ -72,7 +72,7 @@ export default async function SellerDashboardLayout({ children }: { children: Re
           {store && (
             <a href={`/stores/${store.slug}`} target="_blank" rel="noreferrer"
               className="text-xs text-indigo-600 hover:text-indigo-800 hidden sm:block">
-              내 소호몰 →
+              내 상점 →
             </a>
           )}
         </div>

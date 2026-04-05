@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     const { error: mailErr } = await resend.emails.send({
       from:    process.env.RESEND_FROM_EMAIL!,
       to:      email,
-      subject: '[소호몰] 개설 신청 링크가 도착했습니다 (48시간 유효)',
+      subject: '[상점] 개설 신청 링크가 도착했습니다 (48시간 유효)',
       html:    sellerInviteEmail({ applyUrl, qrDataUrl }),
     })
 

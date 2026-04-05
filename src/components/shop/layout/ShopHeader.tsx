@@ -141,7 +141,7 @@ export function ShopHeader({ storeName, isLoggedIn, userEmail, categories = [] }
                   className="text-xs px-3 py-1.5 rounded-full transition-colors"
                   style={{ color: 'var(--shop-ink2)' }}
                 >
-                  소호몰 신청
+                  상점 신청
                 </Link>
                 <Link
                   href="/shop/auth/login"

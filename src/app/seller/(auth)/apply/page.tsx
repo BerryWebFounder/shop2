@@ -66,7 +66,7 @@ export default function SellerApplyRequestPage() {
           <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">
             🏪
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">소호몰 개설 신청</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">상점 개설 신청</h1>
           <p className="text-gray-500 text-sm leading-relaxed">
             이메일 주소를 입력하시면 신청서 작성 링크를<br />
             메일로 보내드립니다.

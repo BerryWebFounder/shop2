@@ -1,6 +1,6 @@
 // ================================================================
 // src/app/stores/[slug]/page.tsx
-// 소호몰 공개 스토어프론트 (Server Component)
+// 상점 공개 스토어프론트 (Server Component)
 // Next.js 15.3+ — params는 Promise<...>
 // ================================================================
 
@@ -17,7 +17,7 @@ export default async function StorePage({ params }: Props) {
   const { slug }  = await params
   const supabase  = await createClient()
 
-  // 소호몰 정보
+  // 상점 정보
   const { data: store } = await supabase
     .from('seller_stores')
     .select('*')
@@ -51,7 +51,7 @@ export default async function StorePage({ params }: Props) {
       </div>
 
       <div className="max-w-5xl mx-auto px-4">
-        {/* 소호몰 헤더 */}
+        {/* 상점 헤더 */}
         <div className="relative -mt-10 mb-8 flex items-end gap-5">
           <div className="w-20 h-20 rounded-2xl border-4 border-white shadow-lg bg-white overflow-hidden shrink-0">
             {store.logo_url ? (

@@ -1,6 +1,6 @@
 // ================================================================
 // src/lib/types/v2.ts
-// 소호몰(V2) 플랫폼 공통 타입 — 단일 진실 공급원 (Single Source of Truth)
+// 상점(V2) 플랫폼 공통 타입 — 단일 진실 공급원 (Single Source of Truth)
 //
 // 이전에 아래 파일들에 분산·중복되어 있던 타입을 통합합니다:
 //   - src/app/seller/store/types.ts     (SellerStore, StoreUpdateData)
@@ -47,7 +47,7 @@ export interface SellerApplication {
 }
 
 // ================================================================
-// 2. 소호몰 (SellerStore)
+// 2. 상점 (SellerStore)
 // ================================================================
 
 export type StoreStatus = 'active' | 'suspended' | 'closed'

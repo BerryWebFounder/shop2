@@ -13,7 +13,7 @@ export default function SellerApplyCompletePage() {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-3">신청이 완료되었습니다!</h1>
         <p className="text-gray-500 text-sm leading-relaxed mb-8">
-          소호몰 개설 신청을 받았습니다.<br />
+          상점 개설 신청을 받았습니다.<br />
           관리자 검토 후 승인 결과를 이메일로 안내드립니다.<br />
           <span className="text-gray-400">보통 1~2 영업일 내에 처리됩니다.</span>
         </p>
@@ -23,7 +23,7 @@ export default function SellerApplyCompletePage() {
           {[
             { step: '1', text: '관리자가 신청 내용을 검토합니다' },
             { step: '2', text: '승인 시 이메일로 안내드립니다' },
-            { step: '3', text: '승인 후 소호몰 설정 및 상품 등록이 가능합니다' },
+            { step: '3', text: '승인 후 상점 설정 및 상품 등록이 가능합니다' },
           ].map(({ step, text }) => (
             <div key={step} className="flex items-start gap-3">
               <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-600 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">

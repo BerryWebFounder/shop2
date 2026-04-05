@@ -41,7 +41,7 @@ export default function SellerApplyPendingPage() {
 
   const statusMeta = {
     pending:  { icon: '⏳', title: '심사 중입니다', color: 'bg-amber-100 text-amber-700',  desc: '관리자가 신청 내용을 검토하고 있습니다.\n보통 1~2 영업일 내에 결과를 안내드립니다.' },
-    approved: { icon: '🎉', title: '승인되었습니다!', color: 'bg-green-100 text-green-700', desc: '소호몰 개설이 승인되었습니다.\n지금 바로 소호몰을 설정하고 상품을 등록해 보세요.' },
+    approved: { icon: '🎉', title: '승인되었습니다!', color: 'bg-green-100 text-green-700', desc: '상점 개설이 승인되었습니다.\n지금 바로 상점을 설정하고 상품을 등록해 보세요.' },
     rejected: { icon: '😔', title: '승인이 거절되었습니다', color: 'bg-red-100 text-red-700', desc: '이번 신청은 승인되지 않았습니다.\n아래 사유를 확인하고 다시 신청해 주세요.' },
   }
 
@@ -61,7 +61,7 @@ export default function SellerApplyPendingPage() {
           <div className="bg-white rounded-xl border border-gray-100 p-5 mb-6 text-left space-y-3">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">신청 정보</p>
             {[
-              { label: '소호몰명',    value: app.store_name },
+              { label: '상점명',    value: app.store_name },
               { label: 'URL',        value: `/stores/${app.store_slug}` },
               { label: '카테고리',   value: app.store_category },
               { label: '신청일',     value: new Date(app.created_at).toLocaleDateString('ko-KR') },
@@ -95,7 +95,7 @@ export default function SellerApplyPendingPage() {
               href="/seller"
               className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors"
             >
-              소호몰 관리 시작하기 →
+              상점 관리 시작하기 →
             </Link>
           ) : status === 'rejected' ? (
             <>

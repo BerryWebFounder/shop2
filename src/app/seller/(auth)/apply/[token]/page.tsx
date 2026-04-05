@@ -17,7 +17,7 @@ interface FormData {
   representative:  string
   phone:           string
   address:         string
-  // 소호몰 정보
+  // 상점 정보
   store_name:      string
   store_slug:      string
   store_category:  string
@@ -39,7 +39,7 @@ export default function SellerApplyTokenPage() {
   const [form,  setForm]  = useState<FormData>(EMPTY)
   const [loading, setLoading] = useState(false)
   const [slugError, setSlugError] = useState('')
-  const [currentStep, setCurrentStep] = useState(0) // 0: 사업자, 1: 소호몰
+  const [currentStep, setCurrentStep] = useState(0) // 0: 사업자, 1: 상점
 
   // 토큰 검증
   useEffect(() => {
@@ -173,13 +173,13 @@ export default function SellerApplyTokenPage() {
         {/* 헤더 */}
         <div className="text-center mb-8">
           <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">🏪</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">소호몰 개설 신청서</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">상점 개설 신청서</h1>
           <p className="text-sm text-gray-500">{email}</p>
         </div>
 
         {/* 스텝 인디케이터 */}
         <div className="flex items-center gap-2 mb-8 justify-center">
-          {['사업자 정보', '소호몰 정보'].map((label, i) => (
+          {['사업자 정보', '상점 정보'].map((label, i) => (
             <div key={i} className="flex items-center gap-2">
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
                 ${i <= currentStep ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-400'}`}>
@@ -257,14 +257,14 @@ export default function SellerApplyTokenPage() {
             </div>
           )}
 
-          {/* Step 1: 소호몰 정보 */}
+          {/* Step 1: 상점 정보 */}
           {currentStep === 1 && (
             <div className="space-y-5">
-              <h2 className="text-base font-semibold text-gray-800 mb-4">소호몰 정보</h2>
+              <h2 className="text-base font-semibold text-gray-800 mb-4">상점 정보</h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className={labelCls}>소호몰 이름 *</label>
+                  <label className={labelCls}>상점 이름 *</label>
                   <input className={inputCls} value={form.store_name}
                     onChange={e => { patch('store_name', e.target.value); if (!form.store_slug) handleSlug(e.target.value) }} placeholder="나의 쇼핑몰" />
                 </div>
@@ -289,10 +289,10 @@ export default function SellerApplyTokenPage() {
               </div>
 
               <div>
-                <label className={labelCls}>소호몰 소개 <span className="text-gray-400 font-normal">(선택)</span></label>
+                <label className={labelCls}>상점 소개 <span className="text-gray-400 font-normal">(선택)</span></label>
                 <textarea className={inputCls + ' resize-none'} rows={3}
                   value={form.store_intro} onChange={e => patch('store_intro', e.target.value)}
-                  placeholder="소호몰을 간단히 소개해 주세요" />
+                  placeholder="상점을 간단히 소개해 주세요" />
               </div>
 
               {error && <p className="text-sm text-red-500 bg-red-50 rounded-lg px-4 py-2.5">{error}</p>}
