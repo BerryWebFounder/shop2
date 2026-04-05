@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
     const svc = createServiceClient()
     const q   = new URL(req.url).searchParams.get('q') ?? ''
     let query = svc.from('seller_stores')
-      .select('id, store_name, slug, category, owner_id, created_at')
+      .select('id, store_name, slug, store_category, owner_id, created_at, status')
       .order('created_at', { ascending: false })
     if (q) query = query.ilike('store_name', `%${q}%`)
     const { data, error } = await query

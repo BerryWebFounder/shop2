@@ -11,7 +11,8 @@ interface Store {
   id: string
   store_name: string
   slug: string
-  category: string
+  store_category: string
+  status: string
   owner_id: string
   created_at: string
   seller_applications?: { email: string; phone: string }[]
@@ -38,7 +39,7 @@ export default function AdminStoresPage() {
           <Table>
             <Thead>
               <Tr>
-                <Th>상점명</Th><Th>URL</Th><Th>카테고리</Th><Th>등록일</Th><Th>관리</Th>
+                <Th>상점명</Th><Th>URL</Th><Th>카테고리</Th><Th>상태</Th><Th>등록일</Th><Th>관리</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -50,7 +51,8 @@ export default function AdminStoresPage() {
                 <Tr key={s.id}>
                   <Td className="font-medium">{s.store_name}</Td>
                   <Td><a href={`/stores/${s.slug}`} target="_blank" rel="noreferrer" className="text-accent hover:underline text-xs">/stores/{s.slug}</a></Td>
-                  <Td className="text-xs">{s.category}</Td>
+                  <Td className="text-xs">{s.store_category}</Td>
+                  <Td><span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${s.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>{s.status === 'active' ? '운영중' : s.status}</span></Td>
                   <Td className="text-xs text-ink-3">{formatDate(s.created_at)}</Td>
                   <Td>
                     <Button size="xs" variant="secondary" onClick={() => window.open(`/stores/${s.slug}`, '_blank')}>보기</Button>
