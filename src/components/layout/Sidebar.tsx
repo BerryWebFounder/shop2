@@ -37,9 +37,10 @@ const NAV = [
   {
     section: '상점',
     items: [
-      { href: '/admin/sellers',      icon: '🏪', label: '판매자 신청 관리' },
-      { href: '/admin/stores',       icon: '🏬', label: '상점 목록' },
-      { href: '/admin/settlements',  icon: '💰', label: '정산 관리' },
+      { href: '/admin/sellers',         icon: '🏪', label: '판매자 신청 관리' },
+      { href: '/admin/stores',          icon: '🏬', label: '상점 목록' },
+      { href: '/admin/store-categories',icon: '🗂️', label: '상점 카테고리', sub: true },
+      { href: '/admin/settlements',     icon: '💰', label: '정산 관리' },
     ],
   },
   {

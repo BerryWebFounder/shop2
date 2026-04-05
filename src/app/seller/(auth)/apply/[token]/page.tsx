@@ -5,9 +5,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { STORE_CATEGORIES } from '@/lib/types/v2'
 
 type Step = 'loading' | 'invalid' | 'form' | 'done'
+interface StoreCategory { id: string; name: string }
 
 interface FormData {
   // 사업자 정보
@@ -35,6 +35,7 @@ export default function SellerApplyTokenPage() {
   const { token }  = useParams<{ token: string }>()
   const [step,  setStep]  = useState<Step>('loading')
   const [email, setEmail] = useState('')
+  const [storeCategories, setStoreCategories] = useState<StoreCategory[]>([])
   const [error, setError] = useState('')
   const [form,  setForm]  = useState<FormData>(EMPTY)
   const [loading, setLoading] = useState(false)
@@ -43,12 +44,13 @@ export default function SellerApplyTokenPage() {
 
   // 토큰 검증
   useEffect(() => {
-    fetch(`/api/seller/apply-token?token=${token}`)
-      .then(r => r.json())
-      .then(data => {
+    Promise.all([
+      fetch(`/api/seller/apply-token?token=${token}`).then(r => r.json()),
+      fetch('/api/store-categories').then(r => r.json()),
+    ]).then(([data, catData]) => {
         if (data.valid) {
           setEmail(data.email)
-          setForm(f => ({ ...f }))
+          setStoreCategories(catData.data ?? [])
           setStep('form')
         } else {
           setError(data.error ?? '유효하지 않은 링크입니다.')
@@ -284,7 +286,7 @@ export default function SellerApplyTokenPage() {
                 <select className={inputCls} value={form.store_category}
                   onChange={e => patch('store_category', e.target.value)}>
                   <option value="">카테고리 선택</option>
-                  {STORE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  {storeCategories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
                 </select>
               </div>
 
