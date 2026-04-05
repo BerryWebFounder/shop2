@@ -26,20 +26,7 @@ const NAV = [
       { href: '/admin/members', icon: '👥', label: '회원 관리' },
     ],
   },
-  {
-    section: '상품',
-    items: [
-      { href: '/admin/products',   icon: '📦', label: '상품 관리' },
-      { href: '/admin/categories', icon: '🗂️', label: '상품 분류 관리', sub: true },
-    ],
-  },
-  {
-    section: '전시',
-    items: [
-      { href: '/admin/display', icon: '🎠', label: '전시 관리' },
-      { href: '/admin/events',  icon: '🎉', label: '이벤트 관리', sub: true },
-    ],
-  },
+
   {
     section: '마케팅',
     items: [
@@ -50,7 +37,9 @@ const NAV = [
   {
     section: '상점',
     items: [
-      { href: '/admin/sellers', icon: '🏪', label: '판매자 신청 관리' },
+      { href: '/admin/sellers',      icon: '🏪', label: '판매자 신청 관리' },
+      { href: '/admin/stores',       icon: '🏬', label: '상점 목록' },
+      { href: '/admin/settlements',  icon: '💰', label: '정산 관리' },
     ],
   },
   {

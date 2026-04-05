@@ -34,21 +34,31 @@ export default async function ShopHomePage() {
     { data: slidesRaw },
     { data: bannersRaw },
     { data: popupsRaw },
-    { data: newProducts },
+    { data: displayItemsRaw },
   ] = await Promise.all([
     supabase.from('display_slides').select('*').order('sort_order'),
     supabase.from('display_banners').select('*').eq('zone', 'main').order('sort_order'),
     supabase.from('display_popups').select('*').order('sort_order'),
-    supabase.from('products')
-      .select('id, name, price, sale_price, product_images!left(public_url, is_primary)')
-      .eq('status', 'sale')
-      .order('created_at', { ascending: false })
+    supabase.from('display_items')
+      .select(`
+        sort_order,
+        product:products(id, name, price, sale_price,
+          images:product_images(public_url, is_primary))
+      `)
+      .eq('is_active', true)
+      .eq('display_type', 'default')
+      .lte('start_date', new Date().toISOString().slice(0,10))
+      .gte('end_date',   new Date().toISOString().slice(0,10))
+      .order('sort_order')
       .limit(8),
   ])
 
   const slides  = filterLive(slidesRaw  ?? [])
   const banners = filterLive(bannersRaw ?? [])
   const popups  = filterLive(popupsRaw  ?? [])
+  const featuredProducts = (displayItemsRaw ?? [])
+    .map((d: any) => d.product)
+    .filter(Boolean)
 
   return (
     <div style={{ background: 'var(--shop-bg)' }}>
@@ -85,20 +95,20 @@ export default async function ShopHomePage() {
         </section>
       )}
 
-      {(newProducts ?? []).length > 0 && (
+      {(featuredProducts ?? []).length > 0 && (
         <section className="px-4 md:px-8 py-12" style={{ maxWidth: 'var(--shop-max-w)', margin: '0 auto' }}>
           <div className="flex items-end justify-between mb-8">
             <h2 className="text-2xl sm:text-3xl" style={{ fontFamily: 'var(--font-display)', color: 'var(--shop-ink)' }}>
-              New Arrivals
+              전시 상품
             </h2>
             <Link href="/shop/products" className="text-sm underline underline-offset-4" style={{ color: 'var(--shop-ink3)' }}>
               전체 보기
             </Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {(newProducts ?? []).map(product => {
+            {(featuredProducts ?? []).map((product: any) => {
               const price    = product.sale_price ?? product.price
-              const imgArr   = (product as { product_images?: { public_url: string; is_primary: boolean }[] }).product_images
+              const imgArr   = product.images as { public_url: string; is_primary: boolean }[] | undefined
               const imgUrl   = imgArr?.find(i => i.is_primary)?.public_url ?? imgArr?.[0]?.public_url
               return (
                 <Link key={product.id} href={'/shop/products/' + product.id} className="group block">

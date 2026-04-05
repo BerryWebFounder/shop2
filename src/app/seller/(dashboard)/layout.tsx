@@ -6,6 +6,7 @@ import Link from 'next/link'
 const NAV_ITEMS = [
   { href: '/seller',          label: '대시보드' },
   { href: '/seller/products', label: '상품 관리' },
+  { href: '/seller/display',  label: '전시 관리' },
   { href: '/seller/orders',   label: '주문 / 정산' },
   { href: '/seller/store',    label: '상점 설정' },
 ]
