@@ -131,6 +131,13 @@ export function Sidebar({ storeName = '내 쇼핑몰' }: SidebarProps) {
       {/* 하단 액션 */}
       <div className="px-2.5 py-3 border-t border-border flex-shrink-0 space-y-1">
         <Link
+          href="/seller"
+          className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm text-ink-2 hover:bg-bg-3 hover:text-ink transition-colors"
+        >
+          <span className="text-[14px]">🏪</span>
+          <span>내 상점 관리</span>
+        </Link>
+        <Link
           href="/shop"
           target="_blank"
           rel="noreferrer"
