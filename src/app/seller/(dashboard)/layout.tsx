@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import { SellerHeaderActions } from '@/components/seller/SellerHeaderActions'
 
 const NAV_ITEMS = [
   { href: '/seller',          label: '대시보드' },
@@ -70,12 +71,7 @@ export default async function SellerDashboardLayout({ children }: { children: Re
             ))}
           </nav>
 
-          {store && (
-            <a href={`/stores/${store.slug}`} target="_blank" rel="noreferrer"
-              className="text-xs text-indigo-600 hover:text-indigo-800 hidden sm:block">
-              내 상점 →
-            </a>
-          )}
+          <SellerHeaderActions storeSlug={store?.slug} />
         </div>
       </header>
       <main>{children}</main>
