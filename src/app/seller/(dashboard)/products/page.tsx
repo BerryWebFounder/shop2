@@ -1,32 +1,117 @@
 'use client'
-// ================================================================
-// src/app/seller/products/page.tsx
-// 판매자 상품 관리 (목록 + 슬라이드 패널)
-// ================================================================
-
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
   type SellerStore, type SellerProduct, type ProductFormData,
   PRODUCT_STATUS_META, EMPTY_PRODUCT_FORM,
 } from '@/lib/types/v2'
 
-// ── 상품 패널 컴포넌트 (등록 / 수정 공용) ──────────────────────
-function ProductPanel({
-  editing, form, setForm, onSave, onClose, saving,
-}: {
-  editing:  SellerProduct | null
-  form:     ProductFormData
-  setForm:  React.Dispatch<React.SetStateAction<ProductFormData>>
-  onSave:   () => void
-  onClose:  () => void
-  saving:   boolean
+interface SellerCategory { id: string; name: string; sort_order: number }
+
+// ── 카테고리 관리 패널 ────────────────────────────────────────────
+function CategoryManager({ storeId, categories, onRefresh }: {
+  storeId: string
+  categories: SellerCategory[]
+  onRefresh: () => void
+}) {
+  const [newName, setNewName] = useState('')
+  const [editId, setEditId]   = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [saving, setSaving]   = useState(false)
+
+  async function handleAdd() {
+    if (!newName.trim() || saving) return
+    setSaving(true)
+    const res = await fetch('/api/seller/product-categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ store_id: storeId, name: newName.trim(), sort_order: categories.length }),
+    })
+    if (res.ok) { setNewName(''); onRefresh() }
+    else { const j = await res.json(); alert(j.error) }
+    setSaving(false)
+  }
+
+  async function handleEdit(id: string) {
+    if (!editName.trim()) return
+    await fetch(`/api/seller/product-categories/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: editName.trim() }),
+    })
+    setEditId(null); onRefresh()
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('카테고리를 삭제하시겠습니까?\n이 카테고리로 등록된 상품 정보는 유지됩니다.')) return
+    await fetch(`/api/seller/product-categories/${id}`, { method: 'DELETE' })
+    onRefresh()
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-6">
+      <h2 className="text-sm font-semibold text-gray-700 mb-4">📂 상품 카테고리 관리</h2>
+
+      {/* 카테고리 목록 */}
+      <div className="space-y-1.5 mb-3">
+        {categories.length === 0 && (
+          <p className="text-xs text-gray-400 py-2">등록된 카테고리가 없습니다.</p>
+        )}
+        {categories.map(c => (
+          <div key={c.id} className="flex items-center gap-2 group">
+            {editId === c.id ? (
+              <>
+                <input value={editName} onChange={e => setEditName(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleEdit(c.id)}
+                  className="flex-1 px-3 py-1.5 text-sm border border-indigo-300 rounded-lg focus:outline-none"
+                  autoFocus />
+                <button onClick={() => handleEdit(c.id)}
+                  className="text-xs px-2.5 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">저장</button>
+                <button onClick={() => setEditId(null)}
+                  className="text-xs px-2.5 py-1.5 border border-gray-200 text-gray-500 rounded-lg hover:bg-gray-50">취소</button>
+              </>
+            ) : (
+              <>
+                <span className="flex-1 text-sm text-gray-800 px-3 py-1.5 bg-gray-50 rounded-lg">{c.name}</span>
+                <button onClick={() => { setEditId(c.id); setEditName(c.name) }}
+                  className="text-xs text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity hover:text-indigo-800">수정</button>
+                <button onClick={() => handleDelete(c.id)}
+                  className="text-xs text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-700">삭제</button>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* 카테고리 추가 */}
+      <div className="flex gap-2">
+        <input value={newName} onChange={e => setNewName(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleAdd()}
+          placeholder="새 카테고리 이름 입력 후 Enter"
+          className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl
+            focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400" />
+        <button onClick={handleAdd} disabled={saving || !newName.trim()}
+          className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors">
+          추가
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── 상품 패널 ────────────────────────────────────────────────────
+function ProductPanel({ editing, form, setForm, onSave, onClose, saving, categories }: {
+  editing:    SellerProduct | null
+  form:       ProductFormData
+  setForm:    React.Dispatch<React.SetStateAction<ProductFormData>>
+  onSave:     () => void
+  onClose:    () => void
+  saving:     boolean
+  categories: SellerCategory[]
 }) {
   const [newTag, setNewTag] = useState('')
-
   const patch = <K extends keyof ProductFormData>(key: K, value: ProductFormData[K]) =>
     setForm(prev => ({ ...prev, [key]: value }))
-
   const addTag = () => {
     const t = newTag.trim()
     if (t && !form.tags.includes(t)) patch('tags', [...form.tags, t])
@@ -37,11 +122,8 @@ function ProductPanel({
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/30" onClick={onClose} />
       <div className="w-[560px] bg-white h-full overflow-y-auto shadow-2xl flex flex-col">
-        {/* 헤더 */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {editing ? '상품 수정' : '상품 등록'}
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-900">{editing ? '상품 수정' : '상품 등록'}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
         </div>
 
@@ -56,11 +138,27 @@ function ProductPanel({
                 onChange={e => patch('description', e.target.value)}
                 placeholder="상품에 대한 상세 설명을 입력하세요"
                 className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
-              />
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400" />
             </div>
-            <PanelField label="카테고리" value={form.category}
-              onChange={v => patch('category', v)} placeholder="예) 의류 > 여성 상의" />
+
+            {/* 카테고리 — 드롭다운 */}
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">카테고리</label>
+              {categories.length > 0 ? (
+                <select value={form.category} onChange={e => patch('category', e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white
+                    focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400">
+                  <option value="">카테고리 선택</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <div className="px-3 py-2 text-xs text-gray-400 bg-gray-50 rounded-lg border border-gray-200">
+                  위 카테고리 관리에서 먼저 카테고리를 추가해 주세요.
+                </div>
+              )}
+            </div>
           </PanelSection>
 
           {/* 가격 */}
@@ -74,11 +172,6 @@ function ProductPanel({
                 onChange={v => patch('compare_price', v ? Number(v) : undefined)}
                 placeholder="0" />
             </div>
-            <PanelField label="원가 (내부용)"
-              value={form.cost_price !== undefined ? String(form.cost_price) : ''}
-              type="number"
-              onChange={v => patch('cost_price', v ? Number(v) : undefined)}
-              placeholder="0" />
           </PanelSection>
 
           {/* 재고 */}
@@ -102,14 +195,11 @@ function ProductPanel({
           {/* 태그 */}
           <PanelSection title="태그">
             <div className="flex gap-2">
-              <input
-                value={newTag}
-                onChange={e => setNewTag(e.target.value)}
+              <input value={newTag} onChange={e => setNewTag(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
                 placeholder="태그 입력 후 Enter"
                 className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
-              />
+                  focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400" />
             </div>
             {form.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
@@ -140,16 +230,13 @@ function ProductPanel({
           </PanelSection>
         </div>
 
-        {/* 푸터 */}
         <div className="px-6 py-4 border-t border-gray-100 flex gap-3">
           <button type="button" onClick={onClose}
-            className="flex-1 py-2.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium
-              hover:bg-gray-50 transition-colors">
+            className="flex-1 py-2.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors">
             취소
           </button>
           <button type="button" onClick={onSave} disabled={saving || !form.name}
-            className="flex-[2] px-8 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium
-              hover:bg-indigo-700 disabled:opacity-60 transition-colors">
+            className="flex-[2] px-8 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-60 transition-colors">
             {saving ? '저장 중...' : editing ? '수정 완료' : '등록하기'}
           </button>
         </div>
@@ -161,20 +248,27 @@ function ProductPanel({
 // ── 메인 페이지 ──────────────────────────────────────────────────
 export default function SellerProductsPage() {
   const supabase = createClient()
-  const [store,    setStore]    = useState<SellerStore | null>(null)
-  const [products, setProducts] = useState<SellerProduct[]>([])
-  const [loading,  setLoading]  = useState(true)
-  const [panelOpen, setPanelOpen] = useState(false)
-  const [editing,  setEditing]  = useState<SellerProduct | null>(null)
-  const [form,     setForm]     = useState<ProductFormData>(EMPTY_PRODUCT_FORM)
-  const [saving,   setSaving]   = useState(false)
+  const [store,      setStore]      = useState<SellerStore | null>(null)
+  const [products,   setProducts]   = useState<SellerProduct[]>([])
+  const [categories, setCategories] = useState<SellerCategory[]>([])
+  const [loading,    setLoading]    = useState(true)
+  const [panelOpen,  setPanelOpen]  = useState(false)
+  const [editing,    setEditing]    = useState<SellerProduct | null>(null)
+  const [form,       setForm]       = useState<ProductFormData>(EMPTY_PRODUCT_FORM)
+  const [saving,     setSaving]     = useState(false)
 
-  const fetchProducts = async (storeId: string) => {
+  const fetchProducts = useCallback(async (storeId: string) => {
     const { data } = await supabase
       .from('products').select('*').eq('store_id', storeId)
       .order('created_at', { ascending: false })
     setProducts(data ?? [])
-  }
+  }, [supabase])
+
+  const fetchCategories = useCallback(async (storeId: string) => {
+    const res = await fetch(`/api/seller/product-categories?store_id=${storeId}`)
+    const json = await res.json()
+    setCategories(json.data ?? [])
+  }, [])
 
   useEffect(() => {
     ;(async () => {
@@ -183,13 +277,15 @@ export default function SellerProductsPage() {
       const { data: s } = await supabase
         .from('seller_stores').select('*').eq('owner_id', user.id).single()
       setStore(s)
-      if (s) await fetchProducts(s.id)
+      if (s) {
+        await Promise.all([fetchProducts(s.id), fetchCategories(s.id)])
+      }
       setLoading(false)
     })()
-  }, [])
+  }, [fetchProducts, fetchCategories, supabase])
 
   const openCreate = () => { setEditing(null); setForm(EMPTY_PRODUCT_FORM); setPanelOpen(true) }
-  const openEdit   = (p: SellerProduct) => {
+  const openEdit = (p: SellerProduct) => {
     setEditing(p)
     setForm({
       name: p.name, description: p.description ?? '',
@@ -209,13 +305,8 @@ export default function SellerProductsPage() {
     const { error } = editing
       ? await supabase.from('products').update(payload).eq('id', editing.id)
       : await supabase.from('products').insert(payload)
-
-    if (error) {
-      alert('저장 실패: ' + error.message)
-    } else {
-      setPanelOpen(false)
-      await fetchProducts(store.id)
-    }
+    if (error) { alert('저장 실패: ' + error.message) }
+    else { setPanelOpen(false); await fetchProducts(store.id) }
     setSaving(false)
   }
 
@@ -225,18 +316,20 @@ export default function SellerProductsPage() {
     setProducts(prev => prev.filter(p => p.id !== id))
   }
 
-  if (loading) return <div className="flex items-center justify-center h-screen text-gray-400 text-sm">불러오는 중...</div>
+  if (loading) return (
+    <div className="flex items-center justify-center h-screen text-gray-400 text-sm">불러오는 중...</div>
+  )
 
   const stats = [
-    { label: '전체',     count: products.length,                                   color: 'text-gray-700'  },
-    { label: '판매 중',  count: products.filter(p => p.status === 'active').length, color: 'text-green-600' },
-    { label: '품절',     count: products.filter(p => p.status === 'sold_out').length, color: 'text-amber-600' },
-    { label: '임시저장', count: products.filter(p => p.status === 'draft').length,  color: 'text-gray-500'  },
+    { label: '전체',     count: products.length,                                      color: 'text-gray-700'  },
+    { label: '판매 중',  count: products.filter(p => p.status === 'active').length,    color: 'text-green-600' },
+    { label: '품절',     count: products.filter(p => p.status === 'sold_out').length,  color: 'text-amber-600' },
+    { label: '임시저장', count: products.filter(p => p.status === 'draft').length,     color: 'text-gray-500'  },
   ]
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -249,6 +342,15 @@ export default function SellerProductsPage() {
           </button>
         </div>
 
+        {/* 카테고리 관리 */}
+        {store && (
+          <CategoryManager
+            storeId={store.id}
+            categories={categories}
+            onRefresh={() => fetchCategories(store.id)}
+          />
+        )}
+
         {/* 통계 카드 */}
         <div className="grid grid-cols-4 gap-4 mb-6">
           {stats.map(s => (
@@ -259,7 +361,7 @@ export default function SellerProductsPage() {
           ))}
         </div>
 
-        {/* 목록 */}
+        {/* 상품 목록 */}
         {products.length === 0 ? (
           <EmptyState onAdd={openCreate} />
         ) : (
@@ -288,7 +390,8 @@ export default function SellerProductsPage() {
       {panelOpen && (
         <ProductPanel
           editing={editing} form={form} setForm={setForm}
-          onSave={handleSave} onClose={() => setPanelOpen(false)} saving={saving}
+          onSave={handleSave} onClose={() => setPanelOpen(false)}
+          saving={saving} categories={categories}
         />
       )}
     </div>
@@ -374,8 +477,7 @@ function PanelField({ label, value, onChange, placeholder, type = 'text' }: {
       <input type={type} value={value} placeholder={placeholder}
         onChange={e => onChange(e.target.value)}
         className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg
-          focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-colors"
-      />
+          focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-colors" />
     </div>
   )
 }
